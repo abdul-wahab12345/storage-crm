@@ -21,6 +21,11 @@ class LeaseResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->isAdmin() ?? false;
+    }
+
     public static function form(Form $form): Form
     {
         return $form->schema([
@@ -31,16 +36,30 @@ class LeaseResource extends Resource
                         ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->first_name} {$record->last_name}")
                         ->required()
                         ->searchable()
+                        ->getSearchResultsUsing(fn (string $search) => \App\Models\Tenant::query()
+                            ->where(fn ($q) => $q
+                                ->whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$search}%"])
+                                ->orWhere('first_name', 'like', "%{$search}%")
+                                ->orWhere('last_name', 'like', "%{$search}%")
+                            )
+                            ->limit(50)
+                            ->get()
+                            ->mapWithKeys(fn ($t) => [$t->id => "{$t->first_name} {$t->last_name}"])
+                        )
                         ->preload()
                         ->createOptionForm([
                             Forms\Components\TextInput::make('first_name')->required(),
                             Forms\Components\TextInput::make('last_name')->required(),
                             Forms\Components\TextInput::make('email')->email(),
                             Forms\Components\TextInput::make('phone')->tel(),
+                            Forms\Components\TextInput::make('whatsapp_number')
+                                ->label('WhatsApp Number')
+                                ->tel()
+                                ->helperText('Include country code, e.g. +1234567890'),
                         ]),
                     Forms\Components\Select::make('unit_id')
                         ->relationship('unit', 'unit_number', fn ($query) => $query->where('status', 'available'))
-                        ->getOptionLabelFromRecordUsing(fn ($record) => "#{$record->unit_number} — {$record->size} (\${$record->monthly_price}/mo)")
+                        ->getOptionLabelFromRecordUsing(fn ($record) => "#{$record->unit_number} — {$record->size} (" . \App\Models\Setting::money($record->monthly_price) . "/mo)")
                         ->required()
                         ->searchable()
                         ->preload()
@@ -62,11 +81,12 @@ class LeaseResource extends Resource
                     Forms\Components\TextInput::make('monthly_rate')
                         ->required()
                         ->numeric()
-                        ->prefix('$')
+                        ->prefix(fn () => \App\Models\Setting::currency())
                         ->helperText('Pre-filled from unit price. Override if needed.'),
                     Forms\Components\TextInput::make('billing_day')
                         ->required()
                         ->numeric()
+                        ->default(now()->day)
                         ->minValue(1)
                         ->maxValue(31)
                         ->helperText('Auto-set from move-in date.'),
@@ -109,7 +129,7 @@ class LeaseResource extends Resource
                     ->date()
                     ->placeholder('Ongoing'),
                 Tables\Columns\TextColumn::make('monthly_rate')
-                    ->money('USD')
+                    ->formatStateUsing(fn ($state) => \App\Models\Setting::money($state))
                     ->sortable(),
                 Tables\Columns\TextColumn::make('billing_day')
                     ->label('Bill Day')

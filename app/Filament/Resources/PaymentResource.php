@@ -20,6 +20,11 @@ class PaymentResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->isAdmin() ?? false;
+    }
+
     public static function form(Form $form): Form
     {
         return $form->schema([
@@ -33,7 +38,7 @@ class PaymentResource extends Resource
                     Forms\Components\TextInput::make('amount')
                         ->required()
                         ->numeric()
-                        ->prefix('$'),
+                        ->prefix(fn () => \App\Models\Setting::currency()),
                     Forms\Components\Select::make('method')
                         ->options([
                             'cash' => 'Cash',
@@ -70,7 +75,7 @@ class PaymentResource extends Resource
                     ->label('Tenant')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('amount')
-                    ->money('USD')
+                    ->formatStateUsing(fn ($state) => \App\Models\Setting::money($state))
                     ->sortable(),
                 Tables\Columns\TextColumn::make('method')
                     ->badge()

@@ -22,6 +22,11 @@ class UnitResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'unit_number';
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->isAdmin() ?? false;
+    }
+
     public static function form(Form $form): Form
     {
         return $form->schema([
@@ -54,7 +59,7 @@ class UnitResource extends Resource
                     Forms\Components\TextInput::make('monthly_price')
                         ->required()
                         ->numeric()
-                        ->prefix('$')
+                        ->prefix(fn () => \App\Models\Setting::currency())
                         ->minValue(0),
                     Forms\Components\Select::make('status')
                         ->options([
@@ -109,7 +114,7 @@ class UnitResource extends Resource
                 Tables\Columns\TextColumn::make('size_label')
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('monthly_price')
-                    ->money('USD')
+                    ->formatStateUsing(fn ($state) => \App\Models\Setting::money($state))
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
@@ -154,11 +159,8 @@ class UnitResource extends Resource
                 Tables\Actions\Action::make('viewTenant')
                     ->label('View Tenant')
                     ->icon('heroicon-o-user')
-                    ->url(fn (Unit $record) => $record->activeLease?->tenant
-                        ? TenantResource::getUrl('edit', ['record' => $record->activeLease->tenant])
-                        : null
-                    )
-                    ->visible(fn (Unit $record) => $record->status === 'occupied'),
+                    ->url(fn (Unit $record) => TenantResource::getUrl('edit', ['record' => $record->activeLease->tenant]))
+                    ->visible(fn (Unit $record) => $record->activeLease?->tenant !== null),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

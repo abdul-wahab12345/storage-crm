@@ -18,7 +18,7 @@ class PaymentsRelationManager extends RelationManager
             Forms\Components\TextInput::make('amount')
                 ->required()
                 ->numeric()
-                ->prefix('$'),
+                ->prefix(fn () => \App\Models\Setting::currency()),
             Forms\Components\Select::make('method')
                 ->options([
                     'cash' => 'Cash',
@@ -44,7 +44,7 @@ class PaymentsRelationManager extends RelationManager
             ->recordTitleAttribute('id')
             ->columns([
                 Tables\Columns\TextColumn::make('amount')
-                    ->money('USD')
+                    ->formatStateUsing(fn ($state) => \App\Models\Setting::money($state))
                     ->sortable(),
                 Tables\Columns\TextColumn::make('method')
                     ->badge()

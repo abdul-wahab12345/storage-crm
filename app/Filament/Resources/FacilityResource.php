@@ -20,6 +20,11 @@ class FacilityResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->isAdmin() ?? false;
+    }
+
     public static function form(Form $form): Form
     {
         return $form->schema([
@@ -44,7 +49,7 @@ class FacilityResource extends Resource
                 ->schema([
                     Forms\Components\Select::make('late_fee_type')
                         ->options([
-                            'flat' => 'Flat Fee ($)',
+                            'flat' => 'Flat Fee',
                             'percentage' => 'Percentage of Rent (%)',
                         ])
                         ->default('flat')
@@ -52,7 +57,7 @@ class FacilityResource extends Resource
                         ->live(),
                     Forms\Components\TextInput::make('late_fee_amount')
                         ->numeric()
-                        ->prefix(fn (Forms\Get $get) => $get('late_fee_type') === 'percentage' ? '%' : '$')
+                        ->prefix(fn (Forms\Get $get) => $get('late_fee_type') === 'percentage' ? '%' : \App\Models\Setting::currency())
                         ->default(0)
                         ->required(),
                     Forms\Components\TextInput::make('late_fee_grace_days')
@@ -96,7 +101,7 @@ class FacilityResource extends Resource
                 Tables\Columns\TextColumn::make('late_fee_type')
                     ->label('Late Fee')
                     ->formatStateUsing(fn (Facility $record) => $record->late_fee_type === 'flat'
-                        ? '$' . number_format($record->late_fee_amount, 2)
+                        ? \App\Models\Setting::money($record->late_fee_amount)
                         : $record->late_fee_amount . '%'
                     ),
                 Tables\Columns\IconColumn::make('is_active')

@@ -23,6 +23,11 @@ class TenantResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'first_name';
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->isAdmin() ?? false;
+    }
+
     public static function getGloballySearchableAttributes(): array
     {
         return ['first_name', 'last_name', 'email', 'phone'];
@@ -53,6 +58,11 @@ class TenantResource extends Resource
                     Forms\Components\TextInput::make('phone')
                         ->tel()
                         ->maxLength(20),
+                    Forms\Components\TextInput::make('whatsapp_number')
+                        ->label('WhatsApp Number')
+                        ->tel()
+                        ->maxLength(20)
+                        ->helperText('Include country code, e.g. +1234567890'),
                     Forms\Components\Textarea::make('address')
                         ->rows(2)
                         ->columnSpanFull(),
@@ -137,7 +147,7 @@ class TenantResource extends Resource
                     ->color(fn (int $state): string => $state > 0 ? 'success' : 'gray'),
                 Tables\Columns\TextColumn::make('outstanding_balance')
                     ->label('Balance Due')
-                    ->money('USD')
+                    ->formatStateUsing(fn ($state) => \App\Models\Setting::money($state))
                     ->color(fn ($state) => $state > 0 ? 'danger' : 'success')
                     ->sortable(query: function ($query, $direction) {
                         return $query->withSum(
@@ -169,7 +179,8 @@ class TenantResource extends Resource
             ])
             ->emptyStateHeading('No tenants yet')
             ->emptyStateDescription('Add your first tenant or import from CSV to get started.')
-            ->emptyStateIcon('heroicon-o-users');
+            ->emptyStateIcon('heroicon-o-users')
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getRelations(): array

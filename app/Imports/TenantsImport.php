@@ -16,6 +16,7 @@ class TenantsImport implements ToModel, WithHeadingRow, WithValidation
             'last_name' => $row['last_name'],
             'email' => $row['email'] ?? null,
             'phone' => $row['phone'] ?? null,
+            'whatsapp_number' => $row['whatsapp_number'] ?? null,
             'address' => $row['address'] ?? null,
             'emergency_contact_name' => $row['emergency_contact_name'] ?? null,
             'emergency_contact_phone' => $row['emergency_contact_phone'] ?? null,

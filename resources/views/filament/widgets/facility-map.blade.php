@@ -1,179 +1,183 @@
+@php
+use App\Models\Setting;
+
+$statusColors = [
+    'available'   => ['border'=>'#6ee7b7','bg'=>'#ecfdf5','text'=>'#065f46','badge_bg'=>'#d1fae5','badge_text'=>'#065f46','dot'=>'#10b981'],
+    'occupied'    => ['border'=>'#93c5fd','bg'=>'#eff6ff','text'=>'#1e40af','badge_bg'=>'#dbeafe','badge_text'=>'#1e40af','dot'=>'#3b82f6'],
+    'maintenance' => ['border'=>'#fcd34d','bg'=>'#fffbeb','text'=>'#92400e','badge_bg'=>'#fef3c7','badge_text'=>'#92400e','dot'=>'#f59e0b'],
+    'overdue'     => ['border'=>'#fca5a5','bg'=>'#fef2f2','text'=>'#991b1b','badge_bg'=>'#fecaca','badge_text'=>'#991b1b','dot'=>'#ef4444'],
+];
+$defaultColor = ['border'=>'#cbd5e1','bg'=>'#f8fafc','text'=>'#475569','badge_bg'=>'#f1f5f9','badge_text'=>'#475569','dot'=>'#94a3b8'];
+@endphp
+
 <x-filament-widgets::widget>
     <x-filament::section>
         <x-slot name="heading">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+                <div style="display:flex; align-items:center; gap:8px;">
                     <x-heroicon-o-map class="h-5 w-5 text-primary-500" />
                     <span>Facility Map</span>
                 </div>
-                <div class="flex items-center gap-3">
-                    <div class="flex items-center gap-2 text-xs">
-                        <span class="inline-block h-3 w-3 rounded-sm bg-emerald-500"></span> Available
-                        <span class="inline-block h-3 w-3 rounded-sm bg-blue-500 ml-2"></span> Occupied
-                        <span class="inline-block h-3 w-3 rounded-sm bg-amber-500 ml-2"></span> Maintenance
-                        <span class="inline-block h-3 w-3 rounded-sm bg-red-500 ml-2"></span> Overdue
-                    </div>
+                <div style="display:flex; align-items:center; gap:12px; font-size:12px;">
+                    @foreach($statusColors as $status => $c)
+                    <span style="display:inline-flex; align-items:center; gap:5px;">
+                        <span style="display:inline-block; width:12px; height:12px; border-radius:3px; background:{{ $c['dot'] }};"></span>
+                        {{ ucfirst($status) }}
+                    </span>
+                    @endforeach
                 </div>
             </div>
         </x-slot>
 
-        <div class="space-y-4">
+        <div style="display:flex; flex-direction:column; gap:16px;">
+
             {{-- Facility Selector --}}
-            <div class="max-w-xs">
+            <div style="max-width:280px;">
                 <select
                     wire:model.live="selectedFacilityId"
-                    class="fi-select-input block w-full rounded-lg border-gray-300 shadow-sm transition duration-75 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm"
+                    class="fi-select-input block w-full rounded-lg border-gray-300 shadow-sm text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                 >
                     <option value="">Select Facility</option>
                     @foreach ($this->facilities as $id => $name)
-                        <option value="{{ $id }}">{{ $name }}</option>
+                        <option value="{{ $id }}" @selected($id == $selectedFacilityId)>{{ $name }}</option>
                     @endforeach
                 </select>
             </div>
 
-            {{-- Unit Grid --}}
-            <div x-data="{ showPanel: @entangle('selectedUnit') }" class="relative">
-                @if ($this->units->isEmpty())
-                    <div class="flex flex-col items-center justify-center py-12 text-center">
-                        <x-heroicon-o-cube class="h-12 w-12 text-gray-400 dark:text-gray-500 mb-3" />
-                        <h3 class="text-sm font-medium text-gray-900 dark:text-white">No units found</h3>
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            {{ $this->selectedFacilityId ? 'Add units to this facility to see them on the map.' : 'Select a facility to view its units.' }}
-                        </p>
-                    </div>
-                @else
-                    <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2">
-                        @foreach ($this->units as $unit)
-                            <button
-                                wire:click="selectUnit({{ $unit->id }})"
-                                class="relative group flex flex-col items-center justify-center rounded-lg border-2 p-3 text-center transition-all duration-200 hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800
-                                    @switch($unit->status)
-                                        @case('available') border-emerald-300 bg-emerald-50 hover:bg-emerald-100 dark:border-emerald-600 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 @break
-                                        @case('occupied') border-blue-300 bg-blue-50 hover:bg-blue-100 dark:border-blue-600 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 @break
-                                        @case('maintenance') border-amber-300 bg-amber-50 hover:bg-amber-100 dark:border-amber-600 dark:bg-amber-900/30 dark:hover:bg-amber-900/50 @break
-                                        @case('overdue') border-red-300 bg-red-50 hover:bg-red-100 dark:border-red-600 dark:bg-red-900/30 dark:hover:bg-red-900/50 animate-pulse @break
-                                    @endswitch
-                                "
-                                title="{{ $unit->unit_number }} — {{ ucfirst($unit->status) }}"
-                            >
-                                <span class="text-xs font-bold
-                                    @switch($unit->status)
-                                        @case('available') text-emerald-700 dark:text-emerald-300 @break
-                                        @case('occupied') text-blue-700 dark:text-blue-300 @break
-                                        @case('maintenance') text-amber-700 dark:text-amber-300 @break
-                                        @case('overdue') text-red-700 dark:text-red-300 @break
-                                    @endswitch
-                                ">
-                                    {{ $unit->unit_number }}
-                                </span>
-                                <span class="text-[10px] opacity-75
-                                    @switch($unit->status)
-                                        @case('available') text-emerald-600 dark:text-emerald-400 @break
-                                        @case('occupied') text-blue-600 dark:text-blue-400 @break
-                                        @case('maintenance') text-amber-600 dark:text-amber-400 @break
-                                        @case('overdue') text-red-600 dark:text-red-400 @break
-                                    @endswitch
-                                ">
-                                    {{ $unit->size }}
-                                </span>
-                            </button>
-                        @endforeach
-                    </div>
-                @endif
+            {{-- Main area: grid + optional detail panel --}}
+            <div style="{{ $selectedUnit ? 'display:grid; grid-template-columns:1fr 300px; gap:16px; align-items:start;' : '' }}">
 
-                {{-- Slide-over Panel --}}
-                <div
-                    x-show="showPanel"
-                    x-transition:enter="transition ease-out duration-300"
-                    x-transition:enter-start="translate-x-full opacity-0"
-                    x-transition:enter-end="translate-x-0 opacity-100"
-                    x-transition:leave="transition ease-in duration-200"
-                    x-transition:leave-start="translate-x-0 opacity-100"
-                    x-transition:leave-end="translate-x-full opacity-0"
-                    class="absolute right-0 top-0 z-10 h-full w-80 overflow-y-auto rounded-lg border border-gray-200 bg-white p-5 shadow-xl dark:border-gray-700 dark:bg-gray-800"
-                    x-cloak
-                >
-                    @if ($selectedUnit)
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-white">
-                                Unit {{ $selectedUnit['unit_number'] }}
-                            </h3>
-                            <button wire:click="closePanel" class="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300 transition">
-                                <x-heroicon-o-x-mark class="h-5 w-5" />
-                            </button>
+                {{-- Unit Grid --}}
+                <div>
+                    @if ($this->units->isEmpty())
+                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:48px 0; text-align:center;">
+                            <x-heroicon-o-cube class="h-12 w-12 text-gray-400 dark:text-gray-500" style="margin-bottom:12px;" />
+                            <p class="text-sm font-medium text-gray-900 dark:text-white">No units found</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400" style="margin-top:4px;">
+                                {{ $this->selectedFacilityId ? 'Add units to this facility to see them on the map.' : 'Select a facility to view its units.' }}
+                            </p>
                         </div>
-
-                        <div class="space-y-3">
-                            <div class="rounded-lg p-3
-                                @switch($selectedUnit['status'])
-                                    @case('available') bg-emerald-50 dark:bg-emerald-900/30 @break
-                                    @case('occupied') bg-blue-50 dark:bg-blue-900/30 @break
-                                    @case('maintenance') bg-amber-50 dark:bg-amber-900/30 @break
-                                    @case('overdue') bg-red-50 dark:bg-red-900/30 @break
-                                @endswitch
-                            ">
-                                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold
-                                    @switch($selectedUnit['status'])
-                                        @case('available') bg-emerald-100 text-emerald-800 dark:bg-emerald-800 dark:text-emerald-200 @break
-                                        @case('occupied') bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-200 @break
-                                        @case('maintenance') bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-200 @break
-                                        @case('overdue') bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-200 @break
-                                    @endswitch
-                                ">
-                                    {{ ucfirst($selectedUnit['status']) }}
-                                </span>
-                            </div>
-
-                            <dl class="space-y-2 text-sm">
-                                <div class="flex justify-between">
-                                    <dt class="text-gray-500 dark:text-gray-400">Size</dt>
-                                    <dd class="font-medium text-gray-900 dark:text-white">{{ $selectedUnit['size'] }}</dd>
-                                </div>
-                                @if ($selectedUnit['size_label'])
-                                    <div class="flex justify-between">
-                                        <dt class="text-gray-500 dark:text-gray-400">Label</dt>
-                                        <dd class="font-medium text-gray-900 dark:text-white">{{ $selectedUnit['size_label'] }}</dd>
-                                    </div>
-                                @endif
-                                <div class="flex justify-between">
-                                    <dt class="text-gray-500 dark:text-gray-400">Price</dt>
-                                    <dd class="font-medium text-gray-900 dark:text-white">${{ number_format($selectedUnit['monthly_price'], 2) }}/mo</dd>
-                                </div>
-                            </dl>
-
-                            @if ($selectedUnit['tenant_name'])
-                                <div class="mt-4 border-t border-gray-200 dark:border-gray-600 pt-4">
-                                    <h4 class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Current Tenant</h4>
-                                    <dl class="space-y-2 text-sm">
-                                        <div class="flex justify-between">
-                                            <dt class="text-gray-500 dark:text-gray-400">Name</dt>
-                                            <dd class="font-medium text-gray-900 dark:text-white">{{ $selectedUnit['tenant_name'] }}</dd>
-                                        </div>
-                                        @if ($selectedUnit['tenant_phone'])
-                                            <div class="flex justify-between">
-                                                <dt class="text-gray-500 dark:text-gray-400">Phone</dt>
-                                                <dd class="font-medium text-gray-900 dark:text-white">{{ $selectedUnit['tenant_phone'] }}</dd>
-                                            </div>
-                                        @endif
-                                        @if ($selectedUnit['move_in_date'])
-                                            <div class="flex justify-between">
-                                                <dt class="text-gray-500 dark:text-gray-400">Move-in</dt>
-                                                <dd class="font-medium text-gray-900 dark:text-white">{{ $selectedUnit['move_in_date'] }}</dd>
-                                            </div>
-                                        @endif
-                                        @if ($selectedUnit['monthly_rate'])
-                                            <div class="flex justify-between">
-                                                <dt class="text-gray-500 dark:text-gray-400">Rent</dt>
-                                                <dd class="font-medium text-gray-900 dark:text-white">${{ number_format($selectedUnit['monthly_rate'], 2) }}/mo</dd>
-                                            </div>
-                                        @endif
-                                    </dl>
-                                </div>
-                            @endif
+                    @else
+                        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(70px,1fr)); gap:8px;">
+                            @foreach ($this->units as $unit)
+                                @php $c = $statusColors[$unit->status] ?? $defaultColor; @endphp
+                                <button
+                                    wire:click="selectUnit({{ $unit->id }})"
+                                    wire:key="unit-btn-{{ $unit->id }}"
+                                    title="{{ $unit->unit_number }} — {{ ucfirst($unit->status) }}"
+                                    style="
+                                        display:flex; flex-direction:column; align-items:center; justify-content:center;
+                                        padding:8px 4px; border-radius:8px; min-height:54px;
+                                        border:2px solid {{ $c['border'] }};
+                                        background:{{ $c['bg'] }};
+                                        cursor:pointer;
+                                        {{ ($selectedUnit && $selectedUnit['id'] === $unit->id) ? 'outline:2px solid #6366f1; outline-offset:2px;' : '' }}
+                                        @if($unit->status === 'overdue') animation:pulse 2s infinite; @endif
+                                    "
+                                >
+                                    <span style="font-size:11px; font-weight:700; line-height:1.2; color:{{ $c['text'] }};">
+                                        {{ $unit->unit_number }}
+                                    </span>
+                                    <span style="font-size:9px; margin-top:2px; opacity:0.7; color:{{ $c['text'] }};">
+                                        {{ $unit->size }}
+                                    </span>
+                                </button>
+                            @endforeach
                         </div>
                     @endif
                 </div>
+
+                {{-- Detail Panel --}}
+                @if ($selectedUnit)
+                @php $sc = $statusColors[$selectedUnit['status']] ?? $defaultColor; @endphp
+                <div wire:key="unit-detail-{{ $selectedUnit['id'] }}"
+                     class="rounded-xl shadow-sm"
+                     style="border:1px solid #e2e8f0; background:#fff; padding:16px;">
+
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                        <span style="font-size:15px; font-weight:700; color:#1e293b;">
+                            Unit {{ $selectedUnit['unit_number'] }}
+                        </span>
+                        <button wire:click="closePanel"
+                                style="padding:4px; border-radius:50%; border:none; background:transparent; cursor:pointer; color:#94a3b8;"
+                                class="hover:bg-gray-100 transition">
+                            <x-heroicon-o-x-mark class="h-4 w-4" />
+                        </button>
+                    </div>
+
+                    {{-- Status badge --}}
+                    <div style="margin-bottom:12px;">
+                        <span style="display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; background:{{ $sc['badge_bg'] }}; color:{{ $sc['badge_text'] }};">
+                            {{ ucfirst($selectedUnit['status']) }}
+                        </span>
+                    </div>
+
+                    {{-- Info rows --}}
+                    <div style="font-size:13px; display:flex; flex-direction:column; gap:8px;">
+                        <div style="display:flex; justify-content:space-between;">
+                            <span style="color:#64748b;">Size</span>
+                            <span style="font-weight:600; color:#1e293b;">{{ $selectedUnit['size'] }}</span>
+                        </div>
+                        @if ($selectedUnit['size_label'])
+                        <div style="display:flex; justify-content:space-between;">
+                            <span style="color:#64748b;">Label</span>
+                            <span style="font-weight:600; color:#1e293b;">{{ $selectedUnit['size_label'] }}</span>
+                        </div>
+                        @endif
+                        <div style="display:flex; justify-content:space-between;">
+                            <span style="color:#64748b;">Price</span>
+                            <span style="font-weight:600; color:#1e293b;">{{ Setting::money($selectedUnit['monthly_price']) }}/mo</span>
+                        </div>
+                    </div>
+
+                    @if ($selectedUnit['tenant_name'])
+                    <div style="margin-top:12px; padding-top:12px; border-top:1px solid #e2e8f0;">
+                        <p style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#94a3b8; margin-bottom:8px;">
+                            Current Tenant
+                        </p>
+                        <div style="font-size:13px; display:flex; flex-direction:column; gap:8px;">
+                            <div style="display:flex; justify-content:space-between;">
+                                <span style="color:#64748b;">Name</span>
+                                <span style="font-weight:600; color:#1e293b;">{{ $selectedUnit['tenant_name'] }}</span>
+                            </div>
+                            @if ($selectedUnit['tenant_phone'])
+                            <div style="display:flex; justify-content:space-between;">
+                                <span style="color:#64748b;">Phone</span>
+                                <span style="font-weight:600; color:#1e293b;">{{ $selectedUnit['tenant_phone'] }}</span>
+                            </div>
+                            @endif
+                            @if ($selectedUnit['move_in_date'])
+                            <div style="display:flex; justify-content:space-between;">
+                                <span style="color:#64748b;">Move-in</span>
+                                <span style="font-weight:600; color:#1e293b;">{{ $selectedUnit['move_in_date'] }}</span>
+                            </div>
+                            @endif
+                            @if ($selectedUnit['monthly_rate'])
+                            <div style="display:flex; justify-content:space-between;">
+                                <span style="color:#64748b;">Rent</span>
+                                <span style="font-weight:600; color:#1e293b;">{{ Setting::money($selectedUnit['monthly_rate']) }}/mo</span>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                    @else
+                    <div style="margin-top:12px; padding-top:12px; border-top:1px solid #e2e8f0; text-align:center;">
+                        <span style="font-size:12px; color:#94a3b8;">No tenant assigned</span>
+                    </div>
+                    @endif
+
+                </div>
+                @endif
+
             </div>
         </div>
+
+        <style>
+            @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50%       { opacity: 0.6; }
+            }
+        </style>
+
     </x-filament::section>
 </x-filament-widgets::widget>

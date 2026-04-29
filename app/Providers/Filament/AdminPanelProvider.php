@@ -17,6 +17,9 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\Enums\ThemeMode;
+
+
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -29,6 +32,7 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->registration()
             ->brandName('StorageCRM')
+            ->defaultThemeMode(ThemeMode::Dark)
             ->colors([
                 'primary' => Color::Indigo,
                 'danger' => Color::Red,

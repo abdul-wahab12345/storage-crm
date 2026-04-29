@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Channels\WebhookChannel;
+use App\Channels\WhatsAppChannel;
 use App\Models\Invoice;
 use App\Services\InvoicePdfService;
 use Illuminate\Bus\Queueable;
@@ -24,6 +25,10 @@ class InvoiceGeneratedNotification extends Notification implements ShouldQueue
 
         if ($notifiable->email) {
             $channels[] = 'mail';
+        }
+
+        if ($notifiable->whatsapp_number) {
+            $channels[] = WhatsAppChannel::class;
         }
 
         $facility = $this->invoice->lease?->unit?->facility;
@@ -94,6 +99,20 @@ class InvoiceGeneratedNotification extends Notification implements ShouldQueue
             'invoice_id' => $this->invoice->id,
             'invoice_number' => $this->invoice->invoice_number,
             'total' => $this->invoice->total,
+        ];
+    }
+
+    public function toWhatsApp(object $notifiable): array
+    {
+        $invoice = $this->invoice;
+        $pdfService = app(\App\Services\InvoicePdfService::class);
+
+        return [
+            'tenant_name'    => $notifiable->full_name,
+            'invoice_number' => $invoice->invoice_number,
+            'amount_due'     => '$' . number_format((float) $invoice->total, 2),
+            'due_date'       => $invoice->due_date->format('M j, Y'),
+            'pdf_url'        => $pdfService->publicUrl($invoice),
         ];
     }
 }

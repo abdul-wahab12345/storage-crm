@@ -16,6 +16,7 @@ class Tenant extends Model
         'last_name',
         'email',
         'phone',
+        'whatsapp_number',
         'address',
         'emergency_contact_name',
         'emergency_contact_phone',
@@ -57,5 +58,10 @@ class Tenant extends Model
     public function routeNotificationForMail(): string
     {
         return $this->email;
+    }
+
+    public function routeNotificationForWhatsApp(): ?string
+    {
+        return $this->whatsapp_number;
     }
 }

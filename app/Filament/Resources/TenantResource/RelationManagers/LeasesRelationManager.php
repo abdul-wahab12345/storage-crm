@@ -7,6 +7,7 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use App\Models\Unit;
 
 class LeasesRelationManager extends RelationManager
 {
@@ -19,18 +20,29 @@ class LeasesRelationManager extends RelationManager
                 ->relationship('unit', 'unit_number')
                 ->required()
                 ->searchable()
-                ->preload(),
+                ->preload()
+                ->live()
+                ->afterStateUpdated(function (Forms\Set $set, $state) {
+                    if ($state) {
+                        $unit = \App\Models\Unit::find($state);
+                        if ($unit) {
+                            $set('monthly_rate', $unit->monthly_price);
+                        }
+                    }
+                }),
             Forms\Components\DatePicker::make('move_in_date')
                 ->required()
+                ->default(now())
                 ->live()
                 ->afterStateUpdated(fn (Forms\Set $set, $state) => $set('billing_day', $state ? \Carbon\Carbon::parse($state)->day : null)),
             Forms\Components\DatePicker::make('move_out_date'),
             Forms\Components\TextInput::make('monthly_rate')
                 ->numeric()
-                ->prefix('$')
+                ->prefix(fn () => \App\Models\Setting::currency())
                 ->required(),
             Forms\Components\TextInput::make('billing_day')
                 ->numeric()
+                ->default(now()->day)
                 ->minValue(1)
                 ->maxValue(31)
                 ->helperText('Auto-set from move-in date. The day each month when rent is due.'),
@@ -60,7 +72,7 @@ class LeasesRelationManager extends RelationManager
                     ->date()
                     ->placeholder('—'),
                 Tables\Columns\TextColumn::make('monthly_rate')
-                    ->money('USD'),
+                    ->formatStateUsing(fn ($state) => \App\Models\Setting::money($state)),
                 Tables\Columns\TextColumn::make('billing_day')
                     ->label('Bill Day')
                     ->suffix(fn ($state) => match (true) {

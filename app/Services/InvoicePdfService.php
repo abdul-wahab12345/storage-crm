@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Models\Invoice;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
-use Spatie\Browsershot\Browsershot;
 
 class InvoicePdfService
 {
@@ -12,51 +12,40 @@ class InvoicePdfService
     {
         $invoice->load(['tenant', 'lease.unit.facility', 'payments']);
 
-        $html = view('pdf.invoice', compact('invoice'))->render();
-
         $directory = 'invoices';
-        $filename = "invoice-{$invoice->invoice_number}.pdf";
-        $path = "{$directory}/{$filename}";
+        $filename  = "invoice-{$invoice->invoice_number}.pdf";
+        $path      = "{$directory}/{$filename}";
 
         Storage::makeDirectory($directory);
 
-        $fullPath = storage_path("app/{$path}");
+        $pdfContent = Pdf::loadView('pdf.invoice', compact('invoice'))
+            ->setPaper('a4')
+            ->output();
 
-        try {
-            Browsershot::html($html)
-                ->format('A4')
-                ->margins(15, 15, 15, 15)
-                ->showBackground()
-                ->save($fullPath);
-        } catch (\Throwable $e) {
-            $this->generateFallbackPdf($html, $fullPath);
-        }
+        $fullPath = storage_path("app/{$path}");
+        file_put_contents($fullPath, $pdfContent);
+
+        // Also store a public copy so WhatsApp can fetch the URL
+        Storage::disk('public')->put($path, $pdfContent);
 
         return $path;
     }
 
-    public function stream(Invoice $invoice): string
+    public function publicUrl(Invoice $invoice): ?string
+    {
+        $path = "invoices/invoice-{$invoice->invoice_number}.pdf";
+        if (Storage::disk('public')->exists($path)) {
+            return Storage::disk('public')->url($path);
+        }
+        return null;
+    }
+
+    public function download(Invoice $invoice): \Symfony\Component\HttpFoundation\Response
     {
         $invoice->load(['tenant', 'lease.unit.facility', 'payments']);
 
-        $html = view('pdf.invoice', compact('invoice'))->render();
-
-        try {
-            return Browsershot::html($html)
-                ->format('A4')
-                ->margins(15, 15, 15, 15)
-                ->showBackground()
-                ->pdf();
-        } catch (\Throwable $e) {
-            return $html;
-        }
-    }
-
-    /**
-     * Simple HTML-to-file fallback when Browsershot/Chrome is unavailable.
-     */
-    private function generateFallbackPdf(string $html, string $path): void
-    {
-        file_put_contents(str_replace('.pdf', '.html', $path), $html);
+        return Pdf::loadView('pdf.invoice', compact('invoice'))
+            ->setPaper('a4')
+            ->download("invoice-{$invoice->invoice_number}.pdf");
     }
 }

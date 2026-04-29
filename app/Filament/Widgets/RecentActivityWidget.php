@@ -36,7 +36,7 @@ class RecentActivityWidget extends BaseWidget
                 Tables\Columns\TextColumn::make('lease.unit.unit_number')
                     ->label('Unit'),
                 Tables\Columns\TextColumn::make('total')
-                    ->money('USD'),
+                    ->formatStateUsing(fn ($state) => \App\Models\Setting::money($state)),
                 Tables\Columns\TextColumn::make('due_date')
                     ->date()
                     ->sortable(),

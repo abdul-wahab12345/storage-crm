@@ -32,7 +32,7 @@ class StatsOverview extends StatsOverviewWidget
         $activeTenants = Tenant::whereHas('activeLeases')->count();
 
         return [
-            Stat::make('Monthly Revenue', '$' . number_format($monthlyRevenue, 2))
+            Stat::make('Monthly Revenue', \App\Models\Setting::money($monthlyRevenue))
                 ->description('Collected this month')
                 ->descriptionIcon('heroicon-m-arrow-trending-up')
                 ->color('success')
@@ -45,12 +45,12 @@ class StatsOverview extends StatsOverviewWidget
                 ->chart([65, 70, 75, 80, 78, 82, $occupancyRate]),
 
             Stat::make('Overdue Invoices', $overdueCount)
-                ->description('$' . number_format($overdueAmount, 2) . ' outstanding')
+                ->description(\App\Models\Setting::money($overdueAmount) . ' outstanding')
                 ->descriptionIcon('heroicon-m-exclamation-triangle')
                 ->color($overdueCount > 0 ? 'danger' : 'success'),
 
             Stat::make('Pending Invoices', $pendingCount)
-                ->description('$' . number_format($pendingAmount, 2) . ' awaiting payment')
+                ->description(\App\Models\Setting::money($pendingAmount) . ' awaiting payment')
                 ->descriptionIcon('heroicon-m-clock')
                 ->color('warning'),
 
