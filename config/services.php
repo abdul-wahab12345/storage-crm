@@ -38,8 +38,9 @@ return [
     'whatsapp' => [
         'access_token'    => env('WHATSAPP_ACCESS_TOKEN'),
         'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
-        'api_version'     => env('WHATSAPP_API_VERSION', 'v19.0'),
+        'api_version'     => env('WHATSAPP_API_VERSION', 'v25.0'),
         'template_name'   => env('WHATSAPP_TEMPLATE_NAME', 'invoice_generated'),
+        'language_code'   => env('WHATSAPP_LANGUAGE_CODE', 'en_US'),
     ],
 
 ];

@@ -7,11 +7,10 @@ use App\Channels\WhatsAppChannel;
 use App\Models\Invoice;
 use App\Services\InvoicePdfService;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class InvoiceGeneratedNotification extends Notification implements ShouldQueue
+class InvoiceGeneratedNotification extends Notification
 {
     use Queueable;
 
@@ -42,22 +41,28 @@ class InvoiceGeneratedNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         $invoice = $this->invoice;
-        $pdfPath = app(InvoicePdfService::class)->generateAndStore($invoice);
 
-        return (new MailMessage)
+        $mail = (new MailMessage)
             ->subject("Invoice {$invoice->invoice_number} — StorageCRM")
             ->greeting("Hello {$notifiable->full_name},")
             ->line("A new invoice has been generated for your storage unit.")
             ->line("**Invoice #:** {$invoice->invoice_number}")
-            ->line("**Amount Due:** $" . number_format($invoice->total, 2))
+            ->line("**Amount Due:** $" . number_format((float) $invoice->total, 2))
             ->line("**Due Date:** {$invoice->due_date->format('F j, Y')}")
             ->line("**Period:** {$invoice->period_start->format('M j')} — {$invoice->period_end->format('M j, Y')}")
             ->action('View Invoice', url("/admin/invoices/{$invoice->id}"))
-            ->line('Please make your payment by the due date to avoid late fees.')
-            ->attach(storage_path("app/{$pdfPath}"), [
-                'as' => "invoice-{$invoice->invoice_number}.pdf",
+            ->line('Please make your payment by the due date to avoid late fees.');
+
+        try {
+            $pdfPath = app(InvoicePdfService::class)->generateAndStore($invoice);
+            $mail->attachFromStorageDisk('local', $pdfPath, "invoice-{$invoice->invoice_number}.pdf", [
                 'mime' => 'application/pdf',
             ]);
+        } catch (\Throwable) {
+            // PDF attachment is best-effort; mail still sends without it
+        }
+
+        return $mail;
     }
 
     public function toWebhook(object $notifiable): array
@@ -104,14 +109,21 @@ class InvoiceGeneratedNotification extends Notification implements ShouldQueue
 
     public function toWhatsApp(object $notifiable): array
     {
-        $invoice = $this->invoice;
-        $pdfService = app(\App\Services\InvoicePdfService::class);
+        $invoice    = $this->invoice;
+        $pdfService = app(InvoicePdfService::class);
+
+        // Ensure the PDF exists on the public disk (toMail may not have run)
+        try {
+            $pdfService->generateAndStore($invoice);
+        } catch (\Throwable) {
+            // proceed without PDF — template will still send if header is optional
+        }
 
         return [
-            'tenant_name'    => $notifiable->full_name,
-            'invoice_number' => $invoice->invoice_number,
-            'amount_due'     => '$' . number_format((float) $invoice->total, 2),
-            'due_date'       => $invoice->due_date->format('M j, Y'),
+            'tenant_name'    => mb_substr($notifiable->full_name, 0, 30),
+            'invoice_number' => mb_substr($invoice->invoice_number, 0, 30),
+            'amount_due'     => mb_substr('$' . number_format((float) $invoice->total, 2), 0, 30),
+            'due_date'       => mb_substr($invoice->due_date->format('M j, Y'), 0, 30),
             'pdf_url'        => $pdfService->publicUrl($invoice),
         ];
     }

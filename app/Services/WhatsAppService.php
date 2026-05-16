@@ -44,15 +44,7 @@ class WhatsAppService
 
         $phone = $this->normalizePhone($to);
 
-        // 1. Send template message
-        $templateSent = $this->sendTemplate($phone, $tenantName, $invoiceNumber, $amountDue, $dueDate);
-
-        // 2. Optionally send the PDF as a document (works once the conversation is open)
-        if ($templateSent && $pdfPublicUrl) {
-            $this->sendDocument($phone, $pdfPublicUrl, "invoice-{$invoiceNumber}.pdf");
-        }
-
-        return $templateSent;
+        return $this->sendTemplate($phone, $tenantName, $invoiceNumber, $amountDue, $dueDate, $pdfPublicUrl);
     }
 
     protected function sendTemplate(
@@ -60,30 +52,116 @@ class WhatsAppService
         string $tenantName,
         string $invoiceNumber,
         string $amountDue,
-        string $dueDate
+        string $dueDate,
+        ?string $pdfPublicUrl = null,
     ): bool {
+        $components = [];
+
+        if ($pdfPublicUrl) {
+            $components[] = [
+                'type' => 'header',
+                'parameters' => [[
+                    'type'     => 'document',
+                    'document' => [
+                        'link'     => $pdfPublicUrl,
+                        'filename' => mb_substr("invoice-{$invoiceNumber}.pdf", 0, 30),
+                    ],
+                ]],
+            ];
+        }
+
+        // Body variables: {{1}} name  {{2}} invoice#  {{3}} amount  {{4}} due date
+        // WhatsApp enforces a 30-character limit on each text body parameter.
+        $components[] = [
+            'type' => 'body',
+            'parameters' => $this->textParams([
+                $tenantName ?: 'Customer',
+                $invoiceNumber,
+                $amountDue,
+                $dueDate,
+            ]),
+        ];
+
         $payload = [
             'messaging_product' => 'whatsapp',
             'to'   => $to,
             'type' => 'template',
             'template' => [
-                'name'     => $this->templateName,
-                'language' => ['code' => 'en_US'],
-                'components' => [
-                    [
-                        'type' => 'body',
-                        'parameters' => [
-                            ['type' => 'text', 'text' => $tenantName ?: 'Customer'],
-                            ['type' => 'text', 'text' => $invoiceNumber],
-                            ['type' => 'text', 'text' => $amountDue],
-                            ['type' => 'text', 'text' => $dueDate],
-                        ],
-                    ],
-                ],
+                'name'       => $this->templateName,
+                'language'   => ['code' => config('services.whatsapp.language_code', 'en_US')],
+                'components' => $components,
             ],
         ];
 
         return $this->post($payload, $to, 'template');
+    }
+
+    /**
+     * Generic template sender for marketing campaigns.
+     * $bodyParams: [['type'=>'text','text'=>'value'], ...]
+     */
+    public function sendTemplateMessage(
+        string $to,
+        string $templateName,
+        string $languageCode,
+        array $bodyParams,
+        ?string $headerDocUrl = null,
+        ?string $headerDocFilename = null,
+    ): bool {
+        if (empty($this->accessToken) || empty($this->phoneNumberId)) {
+            Log::warning('WhatsApp: credentials not configured; skipping.');
+            return false;
+        }
+
+        $phone      = $this->normalizePhone($to);
+        $components = [];
+
+        if ($headerDocUrl) {
+            $components[] = [
+                'type'       => 'header',
+                'parameters' => [[
+                    'type'     => 'document',
+                    'document' => [
+                        'link'     => $headerDocUrl,
+                        'filename' => $headerDocFilename ?? 'document.pdf',
+                    ],
+                ]],
+            ];
+        }
+
+        // Sanitise every text param here — callers shouldn't need to worry about limits
+        $safe = array_map(function (array $param): array {
+            if (($param['type'] ?? '') === 'text') {
+                $param['text'] = mb_substr(trim($param['text'] ?? '') ?: '-', 0, 30);
+            }
+            return $param;
+        }, $bodyParams);
+
+        if (! empty($safe)) {
+            $components[] = ['type' => 'body', 'parameters' => $safe];
+        }
+
+        $payload = [
+            'messaging_product' => 'whatsapp',
+            'to'                => $phone,
+            'type'              => 'template',
+            'template'          => [
+                'name'       => $templateName,
+                'language'   => ['code' => $languageCode],
+                'components' => $components,
+            ],
+        ];
+
+        return $this->post($payload, $phone, 'template');
+    }
+
+    /** Build text parameter array, truncating each value to 30 chars. */
+    protected function textParams(array $values): array
+    {
+        return array_map(fn (string $v) => [
+            'type' => 'text',
+            'text' => mb_substr(trim($v) ?: '-', 0, 30),
+        ], $values);
     }
 
     protected function sendDocument(string $to, string $documentUrl, string $filename): bool
@@ -103,6 +181,8 @@ class WhatsAppService
 
     protected function post(array $payload, string $to, string $type): bool
     {
+        Log::debug('WhatsApp outgoing payload', ['payload' => $payload]);
+
         try {
             $response = Http::timeout(15)
                 ->withToken($this->accessToken)

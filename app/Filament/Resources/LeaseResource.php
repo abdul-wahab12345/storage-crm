@@ -106,6 +106,20 @@ class LeaseResource extends Resource
                     Forms\Components\Textarea::make('notes')->rows(3),
                 ])
                 ->collapsible(),
+
+            Forms\Components\Section::make('Signed Agreement')
+                ->description('Upload the signed copy of the lease agreement once the tenant has signed it.')
+                ->schema([
+                    Forms\Components\FileUpload::make('signed_agreement_path')
+                        ->label('Signed Agreement (PDF)')
+                        ->disk('public')
+                        ->directory('signed-agreements')
+                        ->acceptedFileTypes(['application/pdf'])
+                        ->maxSize(10240)
+                        ->downloadable()
+                        ->openable(),
+                ])
+                ->collapsible(),
         ]);
     }
 
@@ -142,6 +156,14 @@ class LeaseResource extends Resource
                         'expired' => 'gray',
                         default => 'gray',
                     }),
+                Tables\Columns\IconColumn::make('signed_agreement_path')
+                    ->label('Signed')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseIcon('heroicon-o-clock')
+                    ->trueColor('success')
+                    ->falseColor('warning')
+                    ->tooltip(fn (Lease $record) => $record->signed_agreement_path ? 'Signed agreement uploaded' : 'Awaiting signed agreement'),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
@@ -153,6 +175,12 @@ class LeaseResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('agreement_pdf')
+                    ->label('Agreement PDF')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->color('info')
+                    ->url(fn (Lease $record) => route('leases.agreement.pdf', $record))
+                    ->openUrlInNewTab(),
                 Tables\Actions\Action::make('terminate')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')

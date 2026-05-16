@@ -12,20 +12,13 @@ class InvoicePdfService
     {
         $invoice->load(['tenant', 'lease.unit.facility', 'payments']);
 
-        $directory = 'invoices';
-        $filename  = "invoice-{$invoice->invoice_number}.pdf";
-        $path      = "{$directory}/{$filename}";
-
-        Storage::makeDirectory($directory);
+        $path = "invoices/invoice-{$invoice->invoice_number}.pdf";
 
         $pdfContent = Pdf::loadView('pdf.invoice', compact('invoice'))
             ->setPaper('a4')
             ->output();
 
-        $fullPath = storage_path("app/{$path}");
-        file_put_contents($fullPath, $pdfContent);
-
-        // Also store a public copy so WhatsApp can fetch the URL
+        Storage::disk('local')->put($path, $pdfContent);
         Storage::disk('public')->put($path, $pdfContent);
 
         return $path;

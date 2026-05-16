@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Lease extends Model
 {
+    use LogsActivity;
     protected $fillable = [
         'unit_id',
         'tenant_id',
@@ -17,6 +19,7 @@ class Lease extends Model
         'billing_day',
         'status',
         'notes',
+        'signed_agreement_path',
     ];
 
     protected function casts(): array

@@ -1,8 +1,12 @@
 <?php
 
 use App\Models\Invoice;
+use App\Models\Lease;
+use App\Models\Payment;
 use App\Models\Quote;
 use App\Services\InvoicePdfService;
+use App\Services\LeaseAgreementPdfService;
+use App\Services\PaymentReceiptPdfService;
 use App\Services\QuotePdfService;
 use Illuminate\Support\Facades\Route;
 
@@ -35,4 +39,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports/salesman/pdf', function () {
         return app(\App\Filament\Pages\ReportsPage::class)->streamSalesmanPdf();
     })->name('reports.salesman.pdf');
+
+    Route::get('/leases/{lease}/agreement/pdf', function (Lease $lease) {
+        return app(LeaseAgreementPdfService::class)->download($lease);
+    })->name('leases.agreement.pdf');
+
+    Route::get('/payments/{payment}/receipt/pdf', function (Payment $payment) {
+        return app(PaymentReceiptPdfService::class)->download($payment);
+    })->name('payments.receipt.pdf');
 });
