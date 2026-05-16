@@ -31,11 +31,6 @@ jobs:
           npm ci
           npm run build
 
-      - name: Create .env for production
-        run: |
-          cp .env.example .env
-          php artisan key:generate
-
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
