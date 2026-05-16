@@ -47,7 +47,7 @@ class InvoiceGeneratedNotification extends Notification
             ->greeting("Hello {$notifiable->full_name},")
             ->line("A new invoice has been generated for your storage unit.")
             ->line("**Invoice #:** {$invoice->invoice_number}")
-            ->line("**Amount Due:** $" . number_format((float) $invoice->total, 2))
+            ->line("**Amount Due:** " . \App\Models\Setting::currency() . number_format((float) $invoice->total, 2))
             ->line("**Due Date:** {$invoice->due_date->format('F j, Y')}")
             ->line("**Period:** {$invoice->period_start->format('M j')} — {$invoice->period_end->format('M j, Y')}")
             ->action('View Invoice', url("/admin/invoices/{$invoice->id}"))
@@ -122,7 +122,7 @@ class InvoiceGeneratedNotification extends Notification
         return [
             'tenant_name'    => mb_substr($notifiable->full_name, 0, 30),
             'invoice_number' => mb_substr($invoice->invoice_number, 0, 30),
-            'amount_due'     => mb_substr('$' . number_format((float) $invoice->total, 2), 0, 30),
+            'amount_due'     => mb_substr(\App\Models\Setting::currency() . number_format((float) $invoice->total, 2), 0, 30),
             'due_date'       => mb_substr($invoice->due_date->format('M j, Y'), 0, 30),
             'pdf_url'        => $pdfService->publicUrl($invoice),
         ];
