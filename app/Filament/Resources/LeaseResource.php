@@ -104,6 +104,11 @@ class LeaseResource extends Resource
             Forms\Components\Section::make('Notes')
                 ->schema([
                     Forms\Components\Textarea::make('notes')->rows(3),
+                    Forms\Components\TextInput::make('space_details')
+                        ->label('Space Details')
+                        ->placeholder('e.g. Unit 12B – Ground Floor, Near Entrance')
+                        ->helperText('Optional. If set, this replaces the unit number on invoices and receipts.')
+                        ->maxLength(255),
                 ])
                 ->collapsible(),
 

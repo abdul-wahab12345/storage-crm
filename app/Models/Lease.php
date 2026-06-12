@@ -19,6 +19,7 @@ class Lease extends Model
         'billing_day',
         'status',
         'notes',
+        'space_details',
         'signed_agreement_path',
     ];
 

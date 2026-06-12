@@ -4,6 +4,11 @@
     $companyPhone = \App\Models\Setting::get('company_phone', '');
     $companyEmail = \App\Models\Setting::get('company_email', '');
     $tc = $quote->terms_conditions ?: \App\Models\Setting::get('quote_terms_conditions');
+
+    $logoPath = public_path('images/final-logo.png');
+    $logoData = file_exists($logoPath)
+        ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath))
+        : null;
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -16,13 +21,13 @@ body { font-family: DejaVu Sans, sans-serif; color: #1e293b; background: #fff; f
 .page { padding: 36px 40px; }
 
 /* ── Header ── */
-.header-table { width: 100%; border-bottom: 3px solid #4f46e5; padding-bottom: 20px; margin-bottom: 28px; }
-.brand { font-size: 26px; font-weight: 700; color: #4f46e5; }
-.brand-sub { font-size: 11px; color: #64748b; margin-top: 4px; line-height: 1.6; }
+.header-wrap { background: #F97316; padding: 24px 40px; margin-bottom: 28px; }
+.header-table { width: 100%; }
+.brand-sub { font-size: 11px; color: rgba(255,255,255,0.85); margin-top: 6px; line-height: 1.6; }
 .meta-right { text-align: right; vertical-align: top; }
-.q-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; }
-.q-number { font-size: 18px; font-weight: 700; color: #1e293b; }
-.q-date { font-size: 12px; color: #64748b; margin-top: 3px; }
+.q-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.7); }
+.q-number { font-size: 18px; font-weight: 700; color: #fff; margin-top: 2px; }
+.q-date { font-size: 12px; color: rgba(255,255,255,0.8); margin-top: 3px; }
 .badge { display: inline-block; padding: 3px 12px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 6px; }
 .badge-draft    { background: #f1f5f9; color: #475569; }
 .badge-sent     { background: #dbeafe; color: #1e40af; }
@@ -49,7 +54,7 @@ body { font-family: DejaVu Sans, sans-serif; color: #1e293b; background: #fff; f
 .totals-row-table td.label { color: #64748b; }
 .totals-row-table td.amount { text-align: right; font-weight: 600; }
 .totals-divider { border-top: 2px solid #1e293b; }
-.totals-final td { padding-top: 10px; font-size: 17px; font-weight: 800; color: #4f46e5; }
+.totals-final td { padding-top: 10px; font-size: 17px; font-weight: 800; color: #F97316; }
 .clearfix { clear: both; }
 
 /* ── Notes ── */
@@ -64,31 +69,38 @@ body { font-family: DejaVu Sans, sans-serif; color: #1e293b; background: #fff; f
 </style>
 </head>
 <body>
-<div class="page">
+<div class="page" style="padding:0 0 36px 0;">
 
     {{-- HEADER --}}
-    <table class="header-table" cellpadding="0" cellspacing="0">
-        <tr>
-            <td style="vertical-align:top; width:55%;">
-                <div class="brand">{{ $company }}</div>
-                <div class="brand-sub">
-                    @if ($companyAddress){{ $companyAddress }}<br>@endif
-                    @if ($companyPhone){{ $companyPhone }}@if($companyEmail)  &nbsp;|&nbsp;  {{ $companyEmail }}@endif
+    <div class="header-wrap">
+        <table class="header-table" cellpadding="0" cellspacing="0">
+            <tr>
+                <td style="vertical-align:middle; width:55%;">
+                    @if ($logoData)
+                        <img src="{{ $logoData }}" style="height:55px; max-width:180px;">
+                    @else
+                        <div style="font-size:26px; font-weight:700; color:#fff;">{{ $company }}</div>
                     @endif
-                </div>
-            </td>
-            <td class="meta-right" style="vertical-align:top;">
-                <div class="q-label">Quotation</div>
-                <div class="q-number">{{ $quote->quote_number }}</div>
-                <div class="q-date">Issued: {{ $quote->created_at->format('F j, Y') }}</div>
-                @if ($quote->valid_until)
-                    <div class="q-date">Valid Until: {{ $quote->valid_until->format('F j, Y') }}</div>
-                @endif
-                <br>
-                <span class="badge badge-{{ $quote->status }}">{{ ucfirst($quote->status) }}</span>
-            </td>
-        </tr>
-    </table>
+                    <div class="brand-sub">
+                        @if ($companyAddress){{ $companyAddress }}<br>@endif
+                        @if ($companyPhone){{ $companyPhone }}@if($companyEmail) &nbsp;|&nbsp; {{ $companyEmail }}@endif@endif
+                    </div>
+                </td>
+                <td class="meta-right" style="vertical-align:top;">
+                    <div class="q-label">Quotation</div>
+                    <div class="q-number">{{ $quote->quote_number }}</div>
+                    <div class="q-date">Issued: {{ $quote->created_at->format('F j, Y') }}</div>
+                    @if ($quote->valid_until)
+                        <div class="q-date">Valid Until: {{ $quote->valid_until->format('F j, Y') }}</div>
+                    @endif
+                    <br>
+                    <span class="badge badge-{{ $quote->status }}">{{ ucfirst($quote->status) }}</span>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div style="padding: 0 40px;">
 
     {{-- PREPARED FOR / SUBJECT --}}
     <table class="parties-table" cellpadding="0" cellspacing="0">
@@ -175,6 +187,7 @@ body { font-family: DejaVu Sans, sans-serif; color: #1e293b; background: #fff; f
     </div>
     @endif
 
+    </div>{{-- /body-pad --}}
 </div>
 </body>
 </html>
