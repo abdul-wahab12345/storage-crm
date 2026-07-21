@@ -28,8 +28,8 @@
 <meta charset="UTF-8">
 <title>Storage Agreement — {{ $lease->tenant->full_name }}</title>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: Helvetica, Arial, sans-serif; color: #1e293b; background: #fff; font-size: 12.5px; line-height: 1.6; }
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: Helvetica, Arial, sans-serif; }
+body { color: #1e293b; background: #fff; font-size: 12.5px; line-height: 1.6; }
 
 /* ── Header ── */
 .header-wrap { background: #F97316; padding: 16px 30px; }

@@ -30,8 +30,8 @@
 <meta charset="UTF-8">
 <title>Payment Receipt {{ $receiptNumber }}</title>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: Helvetica, Arial, sans-serif; color: #1e293b; background: #fff; font-size: 13px; line-height: 1.6; }
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: Helvetica, Arial, sans-serif; }
+body { color: #1e293b; background: #fff; font-size: 13px; line-height: 1.6; }
 
 .page { padding: 0; }
 
