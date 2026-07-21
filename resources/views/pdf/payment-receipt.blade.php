@@ -43,7 +43,7 @@ body { color: #1e293b; background: #fff; font-size: 13px; line-height: 1.6; }
 .header-table { width: 100%; }
 .brand-sub { font-size: 11px; color: rgba(255,255,255,0.8); margin-top: 5px; line-height: 1.7; }
 .receipt-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.65); }
-.receipt-number { font-size: 22px; font-weight: 800; color: #fff; margin-top: 3px; letter-spacing: -0.5px; }
+.receipt-number { font-size: 22px; font-weight: 700; color: #fff; margin-top: 3px; letter-spacing: -0.5px; }
 .receipt-date { font-size: 11px; color: rgba(255,255,255,0.75); margin-top: 4px; }
 
 /* ── Paid banner ── */
@@ -58,14 +58,14 @@ body { color: #1e293b; background: #fff; font-size: 13px; line-height: 1.6; }
 /* ── Amount block ── */
 .amount-block { text-align: center; padding: 24px 20px; border-bottom: 1px solid #f1f5f9; margin-bottom: 24px; }
 .amount-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; margin-bottom: 8px; }
-.amount-value { font-size: 42px; font-weight: 800; color: #F97316; letter-spacing: -1px; }
+.amount-value { font-size: 42px; font-weight: 700; color: #F97316; letter-spacing: -1px; }
 
 /* ── Two-column info ── */
 .info-section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #f1f5f9; }
 .info-grid { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
 .info-grid td { padding: 7px 0; font-size: 12px; border-bottom: 1px solid #f8fafc; vertical-align: top; }
-.info-grid td.lbl { color: #94a3b8; font-weight: 600; width: 42%; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; padding-top: 9px; }
-.info-grid td.val { color: #1e293b; font-weight: 600; font-size: 13px; }
+.info-grid td.lbl { color: #94a3b8; font-weight: 700; width: 42%; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; padding-top: 9px; }
+.info-grid td.val { color: #1e293b; font-weight: 700; font-size: 13px; }
 
 /* ── Divider ── */
 .divider { border: none; border-top: 1px solid #f1f5f9; margin: 20px 0; }
@@ -82,7 +82,7 @@ body { color: #1e293b; background: #fff; font-size: 13px; line-height: 1.6; }
 .balance-table td { font-size: 12px; padding: 3px 0; }
 .balance-table td.bl { color: #64748b; }
 .balance-table td.br { text-align: right; font-weight: 700; color: #1e293b; }
-.balance-total td { font-size: 14px; font-weight: 800; padding-top: 8px; border-top: 1px solid #e2e8f0; margin-top: 6px; }
+.balance-total td { font-size: 14px; font-weight: 700; padding-top: 8px; border-top: 1px solid #e2e8f0; margin-top: 6px; }
 .balance-total td.bl { color: #1e293b; }
 .balance-total td.br { color: #16a34a; }
 
@@ -104,7 +104,7 @@ body { color: #1e293b; background: #fff; font-size: 13px; line-height: 1.6; }
                     @if ($logoData)
                         <img src="{{ $logoData }}" style="height:52px; max-width:170px;">
                     @else
-                        <div style="font-size:22px; font-weight:800; color:#fff;">{{ $company }}</div>
+                        <div style="font-size:22px; font-weight:700; color:#fff;">{{ $company }}</div>
                     @endif
                     <div class="brand-sub">
                         @if ($companyAddress){{ $companyAddress }}<br>@endif
@@ -124,7 +124,7 @@ body { color: #1e293b; background: #fff; font-size: 13px; line-height: 1.6; }
     <div class="paid-banner">
         <table class="paid-banner-table" cellpadding="0" cellspacing="0">
             <tr>
-                <td class="paid-text">&#10003; &nbsp;Payment Confirmed</td>
+                <td class="paid-text"> &nbsp;Payment Confirmed</td>
                 <td class="paid-check">{{ $payment->paid_at->format('d M Y') }}</td>
             </tr>
         </table>

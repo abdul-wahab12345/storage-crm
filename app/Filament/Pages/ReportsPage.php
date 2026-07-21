@@ -87,6 +87,17 @@ class ReportsPage extends Page
             ->get();
     }
 
+    public function getExpenseBreakdown(): \Illuminate\Support\Collection
+    {
+        [$year, $month] = array_pad(explode('-', $this->paymentsMonth), 2, null);
+
+        return \App\Models\Expense::query()
+            ->when($year && $month, fn ($q) => $q->whereYear('expense_date', $year)->whereMonth('expense_date', $month))
+            ->selectRaw('category, COUNT(*) as count, SUM(amount) as total')
+            ->groupBy('category')
+            ->get();
+    }
+
     public function getSalesmanStats(): \Illuminate\Support\Collection
     {
         return User::where('role', 'salesman')

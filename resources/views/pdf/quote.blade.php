@@ -52,9 +52,9 @@ body { color: #1e293b; background: #fff; font-size: 13px; line-height: 1.5; }
 .totals-row-table { width: 100%; border-collapse: collapse; }
 .totals-row-table td { padding: 6px 0; font-size: 13px; }
 .totals-row-table td.label { color: #64748b; }
-.totals-row-table td.amount { text-align: right; font-weight: 600; }
+.totals-row-table td.amount { text-align: right; font-weight: 700; }
 .totals-divider { border-top: 2px solid #1e293b; }
-.totals-final td { padding-top: 10px; font-size: 17px; font-weight: 800; color: #F97316; }
+.totals-final td { padding-top: 10px; font-size: 17px; font-weight: 700; color: #F97316; }
 .clearfix { clear: both; }
 
 /* ── Notes ── */

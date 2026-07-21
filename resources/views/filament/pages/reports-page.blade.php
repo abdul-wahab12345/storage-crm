@@ -117,6 +117,43 @@
         @endif
     </x-filament::section>
 
+    {{-- Expenses Breakdown --}}
+    <x-filament::section class="mt-6">
+        <x-slot name="heading">Expenses Breakdown</x-slot>
+        <x-slot name="description">Breakdown by category for the selected month.</x-slot>
+
+        @php $expenses = $this->getExpenseBreakdown(); @endphp
+        @if ($expenses->isEmpty())
+            <p class="text-gray-500 dark:text-gray-400 text-sm">No expenses for this period.</p>
+        @else
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                    <thead>
+                        <tr class="border-b border-gray-200 dark:border-gray-700">
+                            <th class="pb-2 font-semibold text-gray-700 dark:text-gray-300">Category</th>
+                            <th class="pb-2 font-semibold text-gray-700 dark:text-gray-300 text-right">Count</th>
+                            <th class="pb-2 font-semibold text-gray-700 dark:text-gray-300 text-right">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($expenses as $row)
+                            <tr class="border-b border-gray-100 dark:border-gray-800">
+                                <td class="py-2 capitalize">{{ str_replace('_', ' ', $row->category) }}</td>
+                                <td class="py-2 text-right">{{ $row->count }}</td>
+                                <td class="py-2 text-right font-medium">{{ \App\Models\Setting::money($row->total) }}</td>
+                            </tr>
+                        @endforeach
+                        <tr class="font-bold">
+                            <td class="pt-2">Total</td>
+                            <td class="pt-2 text-right">{{ $expenses->sum('count') }}</td>
+                            <td class="pt-2 text-right text-danger-600">{{ \App\Models\Setting::money($expenses->sum('total')) }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </x-filament::section>
+
     {{-- Overdue Invoices --}}
     <x-filament::section class="mt-6">
         <x-slot name="heading">Overdue Invoices</x-slot>

@@ -35,7 +35,7 @@ body { color: #1e293b; background: #fff; font-size: 12.5px; line-height: 1.6; }
 .header-wrap { background: #F97316; padding: 16px 30px; }
 .header-table { width: 100%; }
 .brand-sub { font-size: 10px; color: rgba(255,255,255,0.82); margin-top: 4px; line-height: 1.4; }
-.doc-title { font-size: 16px; font-weight: 800; color: #fff; text-align: right; letter-spacing: -0.3px; }
+.doc-title { font-size: 16px; font-weight: 700; color: #fff; text-align: right; letter-spacing: -0.3px; }
 .doc-sub { font-size: 9.5px; color: rgba(255,255,255,0.7); text-align: right; margin-top: 3px; letter-spacing: 0.5px; text-transform: uppercase; }
 
 /* ── Body ── */
@@ -54,7 +54,7 @@ h2 { font-size: 12px; font-weight: 700; color: #fff; background: #F97316; text-t
 /* ── Info table ── */
 .info-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
 .info-table td { padding: 7px 8px; font-size: 12px; vertical-align: top; border-bottom: 1px solid #f8fafc; }
-.info-table td.label { color: #64748b; width: 36%; font-weight: 600; }
+.info-table td.label { color: #64748b; width: 36%; font-weight: 700; }
 .info-table td.value { color: #1e293b; font-weight: 500; }
 
 /* ── Two-column info ── */
@@ -100,7 +100,7 @@ h2 { font-size: 12px; font-weight: 700; color: #fff; background: #F97316; text-t
                     @if ($logoData)
                         <img src="{{ $logoData }}" style="height:50px; max-width:165px;">
                     @else
-                        <div style="font-size:22px; font-weight:800; color:#fff;">{{ $company }}</div>
+                        <div style="font-size:22px; font-weight:700; color:#fff;">{{ $company }}</div>
                     @endif
                     <div class="brand-sub">
                         @if ($companyAddress){{ $companyAddress }}<br>@endif
