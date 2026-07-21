@@ -29,17 +29,17 @@
 <title>Storage Agreement — {{ $lease->tenant->full_name }}</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: DejaVu Sans, sans-serif; color: #1e293b; background: #fff; font-size: 12px; line-height: 1.65; }
+body { font-family: Helvetica, Arial, sans-serif; color: #1e293b; background: #fff; font-size: 12.5px; line-height: 1.6; }
 
 /* ── Header ── */
-.header-wrap { background: #F97316; padding: 22px 40px; }
+.header-wrap { background: #F97316; padding: 16px 30px; }
 .header-table { width: 100%; }
-.brand-sub { font-size: 10.5px; color: rgba(255,255,255,0.82); margin-top: 5px; line-height: 1.7; }
-.doc-title { font-size: 18px; font-weight: 800; color: #fff; text-align: right; letter-spacing: -0.3px; }
-.doc-sub { font-size: 10px; color: rgba(255,255,255,0.7); text-align: right; margin-top: 4px; letter-spacing: 0.5px; text-transform: uppercase; }
+.brand-sub { font-size: 10px; color: rgba(255,255,255,0.82); margin-top: 4px; line-height: 1.4; }
+.doc-title { font-size: 16px; font-weight: 800; color: #fff; text-align: right; letter-spacing: -0.3px; }
+.doc-sub { font-size: 9.5px; color: rgba(255,255,255,0.7); text-align: right; margin-top: 3px; letter-spacing: 0.5px; text-transform: uppercase; }
 
 /* ── Body ── */
-.body { padding: 28px 40px 40px; }
+.body { padding: 25px 35px 30px; }
 
 /* ── Agreement number banner ── */
 .agr-banner { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 5px; padding: 8px 16px; margin-bottom: 24px; }
@@ -48,12 +48,12 @@ body { font-family: DejaVu Sans, sans-serif; color: #1e293b; background: #fff; f
 .agr-date { font-size: 11px; color: #92400e; text-align: right; }
 
 /* ── Section headers ── */
-h2 { font-size: 11px; font-weight: 700; color: #fff; background: #F97316; text-transform: uppercase;
-     letter-spacing: 1px; padding: 5px 10px; margin: 20px 0 10px; border-radius: 3px; }
+h2 { font-size: 12px; font-weight: 700; color: #fff; background: #F97316; text-transform: uppercase;
+     letter-spacing: 1px; padding: 6px 10px 4px; margin: 18px 0 10px; border-radius: 3px; line-height: 1.2; }
 
 /* ── Info table ── */
 .info-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
-.info-table td { padding: 5px 8px; font-size: 11.5px; vertical-align: top; border-bottom: 1px solid #f8fafc; }
+.info-table td { padding: 7px 8px; font-size: 12px; vertical-align: top; border-bottom: 1px solid #f8fafc; }
 .info-table td.label { color: #64748b; width: 36%; font-weight: 600; }
 .info-table td.value { color: #1e293b; font-weight: 500; }
 
@@ -63,28 +63,28 @@ h2 { font-size: 11px; font-weight: 700; color: #fff; background: #F97316; text-t
 .col-r { padding-left: 16px; border-left: 1px solid #f1f5f9; }
 
 /* ── Prohibited items box ── */
-.warn-box { background: #fef2f2; border: 1px solid #fecaca; border-radius: 4px; padding: 10px 14px; margin: 10px 0 16px; font-size: 11px; color: #7f1d1d; }
+.warn-box { background: #fef2f2; border: 1px solid #fecaca; border-radius: 4px; padding: 12px 16px; margin: 14px 0 16px; font-size: 11.5px; color: #7f1d1d; }
 .warn-box strong { color: #991b1b; }
 
 /* ── Access hours box ── */
-.access-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 4px; padding: 10px 14px; margin: 10px 0 16px; font-size: 11px; color: #14532d; }
+.access-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 4px; padding: 12px 16px; margin: 14px 0 16px; font-size: 11.5px; color: #14532d; }
 
 /* ── Conditions of agreement ── */
-.conditions-wrap { margin-top: 4px; }
-.cond-item { margin-bottom: 10px; font-size: 11px; }
-.cond-title { font-weight: 700; color: #1e293b; margin-bottom: 2px; }
+.conditions-wrap { margin-top: 6px; }
+.cond-item { margin-bottom: 14px; font-size: 11.5px; line-height: 1.55; }
+.cond-title { font-weight: 700; color: #1e293b; margin-bottom: 1px; }
 .cond-sub { padding-left: 14px; color: #374151; }
 
 /* ── Acknowledgement ── */
-.ack-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 12px 14px; margin: 16px 0; font-size: 11px; font-style: italic; color: #475569; text-align: center; }
+.ack-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 14px 16px; margin: 20px 0; font-size: 12px; font-style: italic; color: #475569; text-align: center; }
 
 /* ── Signatures ── */
-.sig-table { width: 100%; border-collapse: collapse; margin-top: 28px; }
-.sig-table td { vertical-align: top; width: 50%; padding: 0 24px 0 0; }
-.sig-table td.right-sig { padding: 0 0 0 24px; border-left: 1px solid #f1f5f9; }
-.sig-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; margin-bottom: 4px; }
-.sig-name { font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 48px; }
-.sig-line { border-top: 1px solid #94a3b8; padding-top: 6px; font-size: 10px; color: #94a3b8; }
+.sig-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+.sig-table td { vertical-align: top; width: 50%; padding: 0 20px 0 0; }
+.sig-table td.right-sig { padding: 0 0 0 20px; border-left: 1px solid #f1f5f9; }
+.sig-label { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; margin-bottom: 4px; }
+.sig-name { font-size: 11.5px; font-weight: 700; color: #1e293b; margin-bottom: 35px; }
+.sig-line { border-top: 1px solid #94a3b8; padding-top: 4px; font-size: 9.5px; color: #94a3b8; }
 
 /* ── Footer ── */
 .footer { text-align: center; margin-top: 28px; padding-top: 10px; border-top: 1px solid #e2e8f0; font-size: 10px; color: #94a3b8; }

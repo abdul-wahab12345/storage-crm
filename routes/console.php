@@ -5,3 +5,4 @@ use Illuminate\Support\Facades\Schedule;
 Schedule::command('billing:process-anniversary')->dailyAt('06:00');
 Schedule::command('billing:process-late-fees')->dailyAt('07:00');
 Schedule::command('marketing:dispatch-scheduled')->everyMinute();
+Schedule::command('billing:send-payment-reminders')->dailyAt('08:00');

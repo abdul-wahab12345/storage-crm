@@ -14,6 +14,9 @@ Route::get('/', function () {
     return redirect('/admin');
 });
 
+Route::get('/webhook/whatsapp', [\App\Http\Controllers\WhatsAppWebhookController::class, 'verify']);
+Route::post('/webhook/whatsapp', [\App\Http\Controllers\WhatsAppWebhookController::class, 'handle'])->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
+
 Route::middleware('auth')->group(function () {
     Route::get('/invoices/{invoice}/pdf', function (Invoice $invoice) {
         return app(InvoicePdfService::class)->download($invoice);

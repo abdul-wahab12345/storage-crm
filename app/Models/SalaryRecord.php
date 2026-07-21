@@ -38,6 +38,38 @@ class SalaryRecord extends Model
                 + (float) $record->bonuses
                 - (float) $record->deductions;
         });
+
+        static::saved(function (SalaryRecord $record) {
+            if ($record->status === 'paid') {
+                \App\Models\Expense::updateOrCreate(
+                    [
+                        'salary_record_id' => $record->id,
+                        'category' => 'payroll',
+                    ],
+                    [
+                        'description' => "Salary - {$record->employee->full_name} ({$record->month_label})",
+                        'amount' => $record->total,
+                        'expense_date' => $record->paid_at ?? $record->created_at,
+                        'status' => 'paid',
+                        'paid_at' => $record->paid_at ?? now(),
+                        'notes' => $record->notes,
+                    ]
+                );
+            } else {
+                // If status is changed back to pending, delete the synced expense? Or just update it to pending?
+                // Let's update it to pending so it doesn't get lost if edited manually.
+                \App\Models\Expense::where('salary_record_id', $record->id)
+                    ->where('category', 'payroll')
+                    ->update([
+                        'status' => 'pending',
+                        'amount' => $record->total,
+                    ]);
+            }
+        });
+        
+        static::deleted(function (SalaryRecord $record) {
+            \App\Models\Expense::where('salary_record_id', $record->id)->delete();
+        });
     }
 
     public function employee(): BelongsTo

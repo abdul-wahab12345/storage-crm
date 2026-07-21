@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class PaymentResource extends Resource
 {
@@ -96,6 +97,34 @@ class PaymentResource extends Resource
                         'check' => 'Check',
                         'other' => 'Other',
                     ]),
+                Tables\Filters\Filter::make('paid_at')
+                    ->form([
+                        Forms\Components\DatePicker::make('paid_from'),
+                        Forms\Components\DatePicker::make('paid_until'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['paid_from'] ?? null,
+                                fn (Builder $query, $date): Builder => $query->whereDate('paid_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['paid_until'] ?? null,
+                                fn (Builder $query, $date): Builder => $query->whereDate('paid_at', '<=', $date),
+                            );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if ($data['paid_from'] ?? null) {
+                            $indicators[] = Tables\Filters\Indicator::make('From ' . \Carbon\Carbon::parse($data['paid_from'])->toFormattedDateString())
+                                ->removeField('paid_from');
+                        }
+                        if ($data['paid_until'] ?? null) {
+                            $indicators[] = Tables\Filters\Indicator::make('Until ' . \Carbon\Carbon::parse($data['paid_until'])->toFormattedDateString())
+                                ->removeField('paid_until');
+                        }
+                        return $indicators;
+                    }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

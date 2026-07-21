@@ -32,6 +32,8 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->registration()
             ->brandName('StorageCRM')
+            ->brandLogo(asset('images/final-logo.png'))
+            ->brandLogoHeight('3rem')
             ->defaultThemeMode(ThemeMode::Dark)
             ->colors([
                 'primary' => Color::Indigo,

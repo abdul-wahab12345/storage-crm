@@ -44,6 +44,11 @@ class SettingsPage extends Page implements HasForms
             'company_email' => Setting::get('company_email'),
             'currency' => Setting::get('currency', 'USD'),
             'currency_symbol' => Setting::get('currency_symbol', '$'),
+            'reminder_days_before' => Setting::get('reminder_days_before', '7,3,1'),
+            'reminder_whatsapp_template' => Setting::get('reminder_whatsapp_template', 'payment_reminder'),
+            'reminder_whatsapp_language' => Setting::get('reminder_whatsapp_language', 'en_US'),
+            'admin_notification_email' => Setting::get('admin_notification_email'),
+            'admin_whatsapp_phone' => Setting::get('admin_whatsapp_phone'),
         ]);
     }
 
@@ -125,6 +130,38 @@ class SettingsPage extends Page implements HasForms
                             ->rows(6)
                             ->columnSpanFull(),
                     ]),
+
+                Forms\Components\Section::make('Payment Reminders')
+                    ->description('Configure automated payment reminders.')
+                    ->schema([
+                        Forms\Components\TextInput::make('reminder_days_before')
+                            ->label('Days Before Due Date')
+                            ->placeholder('e.g. 7,3,1')
+                            ->helperText('Comma-separated list of days before due date to send reminders.'),
+                        Forms\Components\TextInput::make('reminder_whatsapp_template')
+                            ->label('WhatsApp Template Name')
+                            ->placeholder('e.g. payment_reminder')
+                            ->default('payment_reminder'),
+                        Forms\Components\TextInput::make('reminder_whatsapp_language')
+                            ->label('WhatsApp Template Language')
+                            ->placeholder('e.g. en_US')
+                            ->default('en_US'),
+                    ])
+                    ->columns(3),
+
+                Forms\Components\Section::make('Admin Notifications')
+                    ->description('Configure admin notifications for incoming messages.')
+                    ->schema([
+                        Forms\Components\TextInput::make('admin_notification_email')
+                            ->label('Admin Notification Email')
+                            ->email()
+                            ->helperText('Email address to receive notifications for new WhatsApp messages.'),
+                        Forms\Components\TextInput::make('admin_whatsapp_phone')
+                            ->label('Admin WhatsApp Phone')
+                            ->tel()
+                            ->helperText('Phone number to include in reminders for queries.'),
+                    ])
+                    ->columns(2),
             ])
             ->statePath('data');
     }

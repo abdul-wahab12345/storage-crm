@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Resources\PaymentResource\Pages;
+namespace App\Filament\Resources\ExpenseResource\Pages;
 
-use App\Filament\Resources\PaymentResource;
+use App\Filament\Resources\ExpenseResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
-class ListPayments extends ListRecords
+class ListExpenses extends ListRecords
 {
-    protected static string $resource = PaymentResource::class;
+    protected static string $resource = ExpenseResource::class;
 
     protected function getHeaderActions(): array
     {
@@ -20,7 +20,7 @@ class ListPayments extends ListRecords
     protected function getHeaderWidgets(): array
     {
         return [
-            \App\Filament\Resources\PaymentResource\Widgets\PaymentStats::class,
+            \App\Filament\Resources\ExpenseResource\Widgets\ExpenseStats::class,
         ];
     }
 }

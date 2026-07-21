@@ -11,6 +11,16 @@
         ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath))
         : null;
 
+    $stampPath = public_path('images/stamp.png');
+    $stampData = file_exists($stampPath)
+        ? 'data:image/png;base64,' . base64_encode(file_get_contents($stampPath))
+        : null;
+
+    $signaturePath = public_path('images/signature.png');
+    $signatureData = file_exists($signaturePath)
+        ? 'data:image/png;base64,' . base64_encode(file_get_contents($signaturePath))
+        : null;
+
     $spaceLabel = $invoice->lease?->space_details
         ?: ($invoice->lease?->unit?->unit_number ? 'Unit ' . $invoice->lease->unit->unit_number : '—');
 @endphp
@@ -21,7 +31,7 @@
 <title>Payment Receipt {{ $receiptNumber }}</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: DejaVu Sans, sans-serif; color: #1e293b; background: #fff; font-size: 13px; line-height: 1.6; }
+body { font-family: Helvetica, Arial, sans-serif; color: #1e293b; background: #fff; font-size: 13px; line-height: 1.6; }
 
 .page { padding: 0; }
 
@@ -203,6 +213,25 @@ body { font-family: DejaVu Sans, sans-serif; color: #1e293b; background: #fff; f
                 </tr>
             </table>
         </div>
+
+        {{-- SIGNATURE & STAMP --}}
+        @if($stampData || $signatureData)
+        <div style="text-align: right; margin-top: 30px; padding-right: 20px;">
+            <div style="display: inline-block; text-align: center;">
+                <div style="height: 90px; margin-bottom: 5px;">
+                    @if($signatureData)
+                        <img src="{{ $signatureData }}" style="max-height: 60px; max-width: 150px; margin-bottom: -30px; margin-right: -15px; position: relative; z-index: 10;">
+                    @endif
+                    @if($stampData)
+                        <img src="{{ $stampData }}" style="max-height: 85px; max-width: 85px; opacity: 0.85;">
+                    @endif
+                </div>
+                <div style="border-top: 1px solid #cbd5e1; padding-top: 5px; font-weight: bold; font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">
+                    Authorized Signature
+                </div>
+            </div>
+        </div>
+        @endif
 
     </div>
 

@@ -70,8 +70,9 @@ class WhatsAppService
             ];
         }
 
-        // Body variables: {{1}} name  {{2}} invoice#  {{3}} amount  {{4}} due date
+        // Body variables: {{1}} name  {{2}} invoice#  {{3}} amount  {{4}} due date {{5}} contact
         // WhatsApp enforces a 30-character limit on each text body parameter.
+        $adminPhone = \App\Models\Setting::get('company_phone', 'our support team');
         $components[] = [
             'type' => 'body',
             'parameters' => $this->textParams([
@@ -79,6 +80,7 @@ class WhatsAppService
                 $invoiceNumber,
                 $amountDue,
                 $dueDate,
+                $adminPhone,
             ]),
         ];
 
@@ -178,6 +180,28 @@ class WhatsAppService
 
         return $this->post($payload, $to, 'document');
     }
+
+    public function sendTextMessage(string $to, string $body): bool
+    {
+        if (empty($this->accessToken) || empty($this->phoneNumberId)) {
+            Log::warning('WhatsApp: credentials not configured; skipping.');
+            return false;
+        }
+
+        $phone = $this->normalizePhone($to);
+
+        $payload = [
+            'messaging_product' => 'whatsapp',
+            'to'   => $phone,
+            'type' => 'text',
+            'text' => [
+                'body' => $body,
+            ],
+        ];
+
+        return $this->post($payload, $phone, 'text');
+    }
+
 
     protected function post(array $payload, string $to, string $type): bool
     {

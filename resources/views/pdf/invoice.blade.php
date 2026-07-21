@@ -20,7 +20,7 @@
 <title>Invoice {{ $invoice->invoice_number }}</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: DejaVu Sans, sans-serif; color: #1e293b; background: #fff; font-size: 13px; line-height: 1.5; }
+body { font-family: Helvetica, Arial, sans-serif; color: #1e293b; background: #fff; font-size: 13px; line-height: 1.5; }
 .page { padding: 0 0 36px 0; }
 
 /* ── Header ── */
