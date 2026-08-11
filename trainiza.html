@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Trainiza — The All-in-One Platform for Personal Trainers</title>
+<meta name="description" content="Stop coaching over WhatsApp and spreadsheets. Trainiza gives trainers a powerful portal and clients a beautiful app." />
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        display: ['Sora', 'sans-serif'],
+        body: ['Inter', 'sans-serif'],
+      },
+      colors: {
+        ink: '#07090c',
+        coal: '#0d1117',
+        slate2: '#161c24',
+        lime2: '#c8f54a',
+        mint: '#3ce8a4',
+      },
+      animation: {
+        'float': 'float 6s ease-in-out infinite',
+        'float-slow': 'float 9s ease-in-out infinite',
+        'pulse-ring': 'pulseRing 2.4s cubic-bezier(0.4,0,0.6,1) infinite',
+        'marquee': 'marquee 28s linear infinite',
+        'grad': 'gradShift 8s ease infinite',
+      },
+      keyframes: {
+        float: { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-14px)' } },
+        pulseRing: { '0%': { transform: 'scale(.9)', opacity: .8 }, '80%,100%': { transform: 'scale(1.6)', opacity: 0 } },
+        marquee: { '0%': { transform: 'translateX(0)' }, '100%': { transform: 'translateX(-50%)' } },
+        gradShift: { '0%,100%': { 'background-position': '0% 50%' }, '50%': { 'background-position': '100% 50%' } },
+      }
+    }
+  }
+}
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; background: #07090c; color: #e7ecf2; overflow-x: hidden; }
+  h1,h2,h3,.font-display { font-family: 'Sora', sans-serif; }
+
+  /* ---- glow + texture ---- */
+  .glow-grid {
+    background-image:
+      linear-gradient(rgba(200,245,74,.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(200,245,74,.05) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 75%);
+    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 75%);
+  }
+  .text-grad {
+    background: linear-gradient(92deg, #c8f54a 10%, #3ce8a4 55%, #4ad9f5 95%);
+    background-size: 200% 200%;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: gradShift 8s ease infinite;
+  }
+  .btn-grad {
+    background: linear-gradient(92deg, #c8f54a, #3ce8a4);
+    background-size: 200% 200%;
+    animation: gradShift 6s ease infinite;
+    transition: transform .25s ease, box-shadow .25s ease;
+  }
+  .btn-grad:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 12px 40px -8px rgba(200,245,74,.45); }
+
+  .card-glass {
+    background: linear-gradient(160deg, rgba(255,255,255,.055), rgba(255,255,255,.015));
+    border: 1px solid rgba(255,255,255,.08);
+    backdrop-filter: blur(10px);
+    transition: transform .35s ease, border-color .35s ease, box-shadow .35s ease;
+  }
+  .card-glass:hover { transform: translateY(-6px); border-color: rgba(200,245,74,.35); box-shadow: 0 24px 60px -20px rgba(200,245,74,.18); }
+
+  /* tilt shine on feature cards */
+  .shine { position: relative; overflow: hidden; }
+  .shine::after {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(420px circle at var(--mx,50%) var(--my,50%), rgba(200,245,74,.10), transparent 45%);
+    opacity: 0; transition: opacity .3s; pointer-events: none;
+  }
+  .shine:hover::after { opacity: 1; }
+
+  /* ---- scroll reveal ---- */
+  .reveal { opacity: 0; transform: translateY(34px); transition: opacity .8s cubic-bezier(.2,.7,.3,1), transform .8s cubic-bezier(.2,.7,.3,1); }
+  .reveal.in { opacity: 1; transform: none; }
+  .reveal-d1 { transition-delay: .12s } .reveal-d2 { transition-delay: .24s } .reveal-d3 { transition-delay: .36s }
+
+  /* ---- phone mockup ---- */
+  .phone {
+    width: 290px; height: 590px; border-radius: 44px;
+    background: linear-gradient(160deg,#1a2230,#0b0f15);
+    border: 1px solid rgba(255,255,255,.14);
+    box-shadow: 0 0 0 10px #11151c, 0 40px 90px -20px rgba(0,0,0,.8), 0 0 90px -20px rgba(200,245,74,.25);
+  }
+  .bar { border-radius: 6px; background: linear-gradient(180deg,#c8f54a,#3ce8a4); transform-origin: bottom; animation: barGrow 1.6s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes barGrow { from { transform: scaleY(0) } to { transform: scaleY(1) } }
+  .progress-ring circle { transition: stroke-dashoffset 1.6s cubic-bezier(.2,.8,.2,1); }
+
+  /* faq */
+  .faq-a { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .45s cubic-bezier(.2,.8,.2,1); }
+  .faq-item.open .faq-a { grid-template-rows: 1fr; }
+  .faq-item.open .faq-chev { transform: rotate(45deg); color:#c8f54a; }
+  .faq-chev { transition: transform .35s ease; }
+
+  /* nav blur on scroll */
+  #nav.scrolled { background: rgba(7,9,12,.78); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,.07); }
+
+  /* ---- animated section connector lines ---- */
+  .section-link { position: relative; z-index: 10; height: 130px; max-width: 340px; margin: -28px auto; pointer-events: none; }
+  .link-path { stroke-dasharray: 1; stroke-dashoffset: 1; }
+  .link-dot { filter: drop-shadow(0 0 7px #c8f54a); opacity: 0; transition: opacity .4s; }
+  .dash-flow { stroke-dasharray: 3 9; animation: dashFlow 1.1s linear infinite; }
+  @keyframes dashFlow { to { stroke-dashoffset: -12 } }
+
+  /* ---- heartbeat pulse line ---- */
+  .pulse-path { stroke-dasharray: 70 560; stroke-dashoffset: 630; animation: pulseSweep 3.2s linear infinite; filter: drop-shadow(0 0 6px rgba(200,245,74,.65)); }
+  @keyframes pulseSweep { to { stroke-dashoffset: 0 } }
+
+  /* ---- line-art illustrations: draw on reveal ---- */
+  .illu .d { stroke-dasharray: 1; stroke-dashoffset: 1; fill: none; }
+  .reveal.in .illu .d { animation: drawIn 1.2s cubic-bezier(.5,0,.2,1) forwards; }
+  @keyframes drawIn { to { stroke-dashoffset: 0 } }
+
+  /* ---- screenshot tabs ---- */
+  .shot-tab { padding: .55rem 1.3rem; border-radius: 999px; border: 1px solid rgba(255,255,255,.12); font-size: .82rem; font-weight: 600; color: rgba(255,255,255,.6); transition: all .25s ease; cursor: pointer; }
+  .shot-tab:hover { border-color: rgba(200,245,74,.45); color: #fff; transform: translateY(-1px); }
+  .shot-tab.active { background: linear-gradient(92deg,#c8f54a,#3ce8a4); color: #07090c; border-color: transparent; box-shadow: 0 8px 24px -8px rgba(200,245,74,.5); }
+
+  .tick-dot::before { content:''; display:inline-block; width:7px; height:7px; border-radius:99px; background:#c8f54a; margin-right:10px; box-shadow:0 0 12px #c8f54a; }
+  ::selection { background:#c8f54a; color:#07090c; }
+  html { scrollbar-color: #2a3340 #07090c; }
+</style>
+</head>
+<body class="antialiased">
+
+<!-- ======================= NAV ======================= -->
+<nav id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <div class="max-w-7xl mx-auto px-5 lg:px-8 h-[72px] flex items-center justify-between">
+    <a href="#" class="flex items-center gap-2.5 font-display font-800 text-xl tracking-tight">
+      <span class="w-9 h-9 rounded-xl btn-grad grid place-items-center text-ink font-extrabold text-lg shadow-lg shadow-lime2/20">T</span>
+      <span class="font-extrabold">train<span class="text-grad">iza</span></span>
+    </a>
+    <div class="hidden md:flex items-center gap-8 text-sm font-medium text-white/70">
+      <a href="#stories" class="hover:text-lime2 transition-colors">Success Stories</a>
+      <a href="#how" class="hover:text-lime2 transition-colors">How It Works</a>
+      <a href="#features" class="hover:text-lime2 transition-colors">Features</a>
+      <a href="#pricing" class="hover:text-lime2 transition-colors">Pricing</a>
+      <a href="#faq" class="hover:text-lime2 transition-colors">FAQ</a>
+    </div>
+    <div class="hidden md:flex items-center gap-3">
+      <a href="#contact" class="px-4 py-2.5 text-sm font-semibold text-white/80 hover:text-white transition-colors">Book a Demo</a>
+      <a href="#pricing" class="btn-grad text-ink px-5 py-2.5 rounded-full text-sm font-bold">Start Free Trial</a>
+    </div>
+    <button id="burger" class="md:hidden w-10 h-10 grid place-items-center rounded-lg border border-white/10" aria-label="Menu">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+  </div>
+  <div id="mobileMenu" class="md:hidden hidden bg-coal/95 backdrop-blur-xl border-t border-white/5 px-6 py-6 space-y-4 text-base font-medium">
+    <a href="#stories" class="block text-white/80">Success Stories</a>
+    <a href="#how" class="block text-white/80">How It Works</a>
+    <a href="#features" class="block text-white/80">Features</a>
+    <a href="#pricing" class="block text-white/80">Pricing</a>
+    <a href="#faq" class="block text-white/80">FAQ</a>
+    <a href="#pricing" class="btn-grad text-ink block text-center px-5 py-3 rounded-full font-bold">Start Free Trial</a>
+  </div>
+</nav>
+
+<!-- ======================= HERO ======================= -->
+<header class="relative pt-36 lg:pt-44 pb-20 lg:pb-28">
+  <div class="absolute inset-0 glow-grid"></div>
+  <div class="absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[500px] rounded-full bg-lime2/10 blur-[140px] pointer-events-none"></div>
+  <div class="absolute top-40 right-[-200px] w-[500px] h-[500px] rounded-full bg-mint/8 blur-[120px] pointer-events-none"></div>
+
+  <div class="relative max-w-7xl mx-auto px-5 lg:px-8 grid lg:grid-cols-2 gap-16 items-center">
+    <div>
+      <div class="reveal inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-lime2/30 bg-lime2/5 text-lime2 text-xs font-semibold tracking-wide uppercase mb-7">
+        <span class="relative flex h-2 w-2"><span class="animate-pulse-ring absolute inline-flex h-full w-full rounded-full bg-lime2"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-lime2"></span></span>
+        The coaching platform trusted by top trainers
+      </div>
+
+      <h1 class="reveal reveal-d1 font-display font-extrabold text-[42px] leading-[1.05] sm:text-6xl lg:text-[64px] tracking-tight">
+        Your clients deserve<br>better than <span class="relative inline-block"><span class="text-grad">a PDF.</span>
+        <svg class="absolute -bottom-2 left-0 w-full" height="10" viewBox="0 0 200 10" preserveAspectRatio="none"><path d="M2 8 Q 60 1 110 5 T 198 4" stroke="#c8f54a" stroke-width="3" fill="none" stroke-linecap="round" opacity=".6"/></svg></span>
+      </h1>
+
+      <p class="reveal reveal-d2 mt-7 text-lg text-white/60 max-w-xl leading-relaxed">
+        Stop running your coaching business on WhatsApp threads and spreadsheets.
+        Trainiza gives you a professional trainer portal — and gives every client a
+        stunning app with video workouts, reminders and progress graphs.
+      </p>
+
+      <div class="reveal reveal-d3 mt-9 flex flex-col sm:flex-row gap-4">
+        <a href="#pricing" class="btn-grad text-ink px-8 py-4 rounded-full font-bold text-base text-center">
+          Try Free — No Card Required
+        </a>
+        <a href="#how" class="px-8 py-4 rounded-full font-semibold text-base text-center border border-white/15 hover:border-lime2/50 hover:bg-white/5 transition-all group">
+          See how it works <span class="inline-block group-hover:translate-x-1 transition-transform">→</span>
+        </a>
+      </div>
+
+      <!-- featured case study -->
+      <a href="#stories" class="reveal reveal-d3 mt-8 flex items-center gap-4 card-glass rounded-2xl p-3 pr-5 max-w-md group">
+        <img src="https://trainiza.com/images/chiara-3.webp" alt="Chiara Fazzini" class="w-14 h-14 rounded-xl object-cover border border-lime2/40">
+        <p class="text-sm text-white/60 leading-snug"><span class="font-bold text-white">Chiara Fazzini</span> <span class="text-lime2">(300K+ followers)</span> doubled her income using this exact system <span class="inline-block group-hover:translate-x-1 transition-transform text-lime2">→</span></p>
+      </a>
+
+      <!-- animated stats -->
+      <div class="reveal reveal-d3 mt-10 grid grid-cols-3 gap-6 max-w-md">
+        <div><div class="font-display font-extrabold text-3xl text-lime2"><span class="count" data-to="300">0</span>K+</div><div class="text-xs text-white/50 mt-1">Audience reached by our coaches</div></div>
+        <div><div class="font-display font-extrabold text-3xl text-lime2"><span class="count" data-to="10">0</span>h</div><div class="text-xs text-white/50 mt-1">Saved per week with automation</div></div>
+        <div><div class="font-display font-extrabold text-3xl text-lime2"><span class="count" data-to="2">0</span>x</div><div class="text-xs text-white/50 mt-1">Income growth, real case study</div></div>
+      </div>
+
+      <!-- heartbeat pulse line -->
+      <div class="reveal reveal-d3 mt-10 max-w-md" aria-hidden="true">
+        <svg viewBox="0 0 400 36" fill="none" class="w-full">
+          <path d="M0 22 H110 l10 -14 12 22 9 -16 7 8 h62 l9 -10 11 16 8 -6 H400" stroke="rgba(255,255,255,.09)" stroke-width="2" stroke-linejoin="round"/>
+          <path class="pulse-path" pathLength="630" d="M0 22 H110 l10 -14 12 22 9 -16 7 8 h62 l9 -10 11 16 8 -6 H400" stroke="url(#pgrad)" stroke-width="2" stroke-linejoin="round"/>
+          <defs><linearGradient id="pgrad" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#c8f54a"/><stop offset="1" stop-color="#3ce8a4"/></linearGradient></defs>
+        </svg>
+      </div>
+    </div>
+
+    <!-- phone mockup -->
+    <div class="relative flex justify-center lg:justify-end reveal reveal-d2">
+      <div class="absolute top-10 left-1/2 -translate-x-1/2 w-72 h-72 bg-mint/20 blur-[100px] rounded-full"></div>
+
+      <div class="phone relative p-5 animate-float">
+        <div class="w-24 h-5 bg-black rounded-b-2xl absolute top-0 left-1/2 -translate-x-1/2"></div>
+        <div class="mt-8 flex items-center justify-between">
+          <div>
+            <div class="text-[11px] text-white/40">Good morning 💪</div>
+            <div class="font-display font-bold text-base">Today: Push Day</div>
+          </div>
+          <div class="w-9 h-9 rounded-full btn-grad grid place-items-center text-ink text-xs font-extrabold">JD</div>
+        </div>
+
+        <!-- progress ring -->
+        <div class="mt-5 card-glass rounded-2xl p-4 flex items-center gap-4">
+          <svg class="progress-ring" width="64" height="64" viewBox="0 0 64 64">
+            <circle cx="32" cy="32" r="26" stroke="rgba(255,255,255,.08)" stroke-width="7" fill="none"/>
+            <circle id="ring" cx="32" cy="32" r="26" stroke="url(#rg)" stroke-width="7" fill="none" stroke-linecap="round" stroke-dasharray="163" stroke-dashoffset="163" transform="rotate(-90 32 32)"/>
+            <defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#c8f54a"/><stop offset="1" stop-color="#3ce8a4"/></linearGradient></defs>
+          </svg>
+          <div>
+            <div class="font-display font-bold text-xl">78%</div>
+            <div class="text-[11px] text-white/45">Weekly plan completed</div>
+          </div>
+        </div>
+
+        <!-- strength graph -->
+        <div class="mt-4 card-glass rounded-2xl p-4">
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-[11px] text-white/45">Bench press · strength</span>
+            <span class="text-[11px] text-mint font-bold">▲ +12%</span>
+          </div>
+          <div class="flex items-end gap-2 h-20">
+            <div class="bar w-full" style="height:35%; animation-delay:.1s"></div>
+            <div class="bar w-full" style="height:45%; animation-delay:.2s"></div>
+            <div class="bar w-full" style="height:40%; animation-delay:.3s"></div>
+            <div class="bar w-full" style="height:58%; animation-delay:.4s"></div>
+            <div class="bar w-full" style="height:66%; animation-delay:.5s"></div>
+            <div class="bar w-full" style="height:62%; animation-delay:.6s"></div>
+            <div class="bar w-full" style="height:85%; animation-delay:.7s"></div>
+          </div>
+        </div>
+
+        <!-- workout row -->
+        <div class="mt-4 card-glass rounded-2xl p-4 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-lime2/15 grid place-items-center text-lime2">▶</div>
+          <div class="flex-1">
+            <div class="text-sm font-semibold">Incline DB Press</div>
+            <div class="text-[11px] text-white/45">4 sets × 10 · video demo</div>
+          </div>
+          <div class="text-mint text-lg">✓</div>
+        </div>
+      </div>
+
+      <!-- floating chips -->
+      <div class="absolute -left-2 sm:left-2 top-24 card-glass rounded-2xl px-4 py-3 animate-float-slow hidden sm:flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-mint/15 grid place-items-center">🔔</div>
+        <div><div class="text-xs font-bold">Time to train!</div><div class="text-[10px] text-white/45">Push notification · now</div></div>
+      </div>
+      <div class="absolute right-0 lg:-right-4 bottom-24 card-glass rounded-2xl px-4 py-3 animate-float hidden sm:flex items-center gap-3" style="animation-delay:1.2s">
+        <div class="w-9 h-9 rounded-full bg-lime2/15 grid place-items-center">💶</div>
+        <div><div class="text-xs font-bold">Payment received</div><div class="text-[10px] text-white/45">Financial hub · €120</div></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ======================= MARQUEE ======================= -->
+<section class="py-6 border-y border-white/5 bg-coal/60 overflow-hidden">
+  <div class="flex whitespace-nowrap animate-marquee will-change-transform" id="marquee">
+    <div class="flex items-center gap-12 px-6 text-white/35 font-display font-semibold text-sm tracking-widest uppercase">
+      <span>Online Coaches</span><span class="text-lime2">✦</span>
+      <span>Personal Trainers</span><span class="text-lime2">✦</span>
+      <span>Fitness Influencers</span><span class="text-lime2">✦</span>
+      <span>Gyms & Studios</span><span class="text-lime2">✦</span>
+      <span>Hybrid Coaching</span><span class="text-lime2">✦</span>
+      <span>Nutrition Plans</span><span class="text-lime2">✦</span>
+      <span>Habit Tracking</span><span class="text-lime2">✦</span>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= SUCCESS STORIES ======================= -->
+<section id="stories" class="relative py-24 lg:py-32">
+  <div class="absolute top-1/3 left-[-200px] w-[440px] h-[440px] bg-lime2/6 blur-[130px] rounded-full pointer-events-none"></div>
+  <div class="max-w-7xl mx-auto px-5 lg:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <div class="reveal text-lime2 text-xs font-bold tracking-[0.25em] uppercase mb-4">Success Stories</div>
+      <h2 class="reveal reveal-d1 font-display font-extrabold text-4xl lg:text-5xl tracking-tight">Real coaches. <span class="text-grad">Real results.</span></h2>
+      <p class="reveal reveal-d2 mt-5 text-white/55">From spreadsheet chaos to a professional coaching brand — here's what happens when trainers make the switch.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <!-- card 1 -->
+      <article class="reveal card-glass shine rounded-3xl p-8 flex flex-col">
+        <div class="flex items-center gap-2 text-lime2 text-sm mb-5">★★★★★</div>
+        <p class="text-white/75 leading-relaxed flex-1">"I went from juggling spreadsheets to running an automated system serving thousands of clients — and I doubled my income along the way."</p>
+        <div class="mt-7 flex items-center gap-4">
+          <img src="https://trainiza.com/images/chiara-3.webp" alt="Chiara Fazzini" loading="lazy" class="w-14 h-14 rounded-full object-cover border-2 border-lime2/60 shadow-lg shadow-lime2/20">
+          <div>
+            <div class="font-bold text-sm">Chiara Fazzini</div>
+            <div class="text-xs text-white/45">The Scaler · 300K+ followers</div>
+          </div>
+        </div>
+        <div class="mt-5 pt-5 border-t border-white/8 text-xs font-semibold text-mint">2× income · thousands of clients automated</div>
+      </article>
+
+      <!-- card 2 -->
+      <article class="reveal reveal-d1 card-glass shine rounded-3xl p-8 flex flex-col md:-translate-y-4 border-lime2/25" style="border-color: rgba(200,245,74,.25)">
+        <div class="flex items-center gap-2 text-lime2 text-sm mb-5">★★★★★</div>
+        <p class="text-white/75 leading-relaxed flex-1">"My clients used to get a PDF. Now they open a premium app with my programs inside. The experience finally matches the price I charge."</p>
+        <div class="mt-7 flex items-center gap-4">
+          <img src="https://trainiza.com/images/francessco.webp" alt="Francesco Sforza" loading="lazy" class="w-14 h-14 rounded-full object-cover border-2 border-mint/60 shadow-lg shadow-mint/20">
+          <div>
+            <div class="font-bold text-sm">Francesco Sforza</div>
+            <div class="text-xs text-white/45">The Professional</div>
+          </div>
+        </div>
+        <div class="mt-5 pt-5 border-t border-white/8 text-xs font-semibold text-mint">Premium client experience · zero PDFs</div>
+      </article>
+
+      <!-- card 3 -->
+      <article class="reveal reveal-d2 card-glass shine rounded-3xl p-8 flex flex-col">
+        <div class="flex items-center gap-2 text-lime2 text-sm mb-5">★★★★★</div>
+        <p class="text-white/75 leading-relaxed flex-1">"Check-ins, reminders and payments now run themselves. I save around ten hours every single week — time I put back into actual coaching."</p>
+        <div class="mt-7 flex items-center gap-4">
+          <img src="https://trainiza.com/images/alessio-alteri.webp" alt="Alessio Alteri" loading="lazy" class="w-14 h-14 rounded-full object-cover border-2 border-lime2/60 shadow-lg shadow-lime2/20">
+          <div>
+            <div class="font-bold text-sm">Alessio Alteri</div>
+            <div class="text-xs text-white/45">The Online Coach</div>
+          </div>
+        </div>
+        <div class="mt-5 pt-5 border-t border-white/8 text-xs font-semibold text-mint">10 hours saved weekly with automation</div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- animated section connector -->
+<div class="section-link" aria-hidden="true">
+  <svg class="w-full h-full" viewBox="0 0 340 140" fill="none">
+    <path id="lp1" class="link-path" pathLength="1" d="M170 0 C170 45 95 40 95 70 C95 105 170 95 170 140" stroke="url(#lgrad1)" stroke-width="2" stroke-linecap="round"/>
+    <defs><linearGradient id="lgrad1" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#c8f54a"/><stop offset="1" stop-color="#3ce8a4"/></linearGradient></defs>
+    <circle class="link-dot" r="4" fill="#c8f54a"><animateMotion dur="3.4s" repeatCount="indefinite"><mpath href="#lp1"/></animateMotion></circle>
+  </svg>
+</div>
+
+<!-- ======================= HOW IT WORKS ======================= -->
+<section id="how" class="relative py-24 lg:py-32 bg-coal/50 border-y border-white/5">
+  <div class="max-w-7xl mx-auto px-5 lg:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-20">
+      <div class="reveal text-lime2 text-xs font-bold tracking-[0.25em] uppercase mb-4">How It Works</div>
+      <h2 class="reveal reveal-d1 font-display font-extrabold text-4xl lg:text-5xl tracking-tight">Live in minutes, <span class="text-grad">not weeks.</span></h2>
+    </div>
+
+    <div class="relative grid md:grid-cols-3 gap-10">
+      <svg class="hidden md:block absolute top-[154px] left-[16%] w-[68%] h-3" aria-hidden="true">
+        <line x1="0" y1="6" x2="100%" y2="6" stroke="rgba(200,245,74,.14)" stroke-width="1.5"/>
+        <line class="dash-flow" x1="0" y1="6" x2="100%" y2="6" stroke="#c8f54a" stroke-width="1.5" opacity=".55"/>
+      </svg>
+
+      <div class="reveal relative text-center group">
+        <!-- illustration: profile card -->
+        <svg class="illu mx-auto mb-5 w-40 h-[6.5rem]" viewBox="0 0 150 100" stroke-width="2" aria-hidden="true">
+          <rect class="d" pathLength="1" x="25" y="14" width="100" height="72" rx="12" stroke="rgba(255,255,255,.35)"/>
+          <circle class="d" pathLength="1" style="animation-delay:.2s" cx="55" cy="42" r="11" stroke="#c8f54a"/>
+          <path class="d" pathLength="1" style="animation-delay:.35s" d="M38 70 c4 -10 30 -10 34 0" stroke="#c8f54a" stroke-linecap="round"/>
+          <path class="d" pathLength="1" style="animation-delay:.5s" d="M82 38 h28 M82 48 h20" stroke="rgba(255,255,255,.4)" stroke-linecap="round"/>
+          <circle class="d" pathLength="1" style="animation-delay:.65s" cx="112" cy="68" r="9" stroke="#3ce8a4"/>
+          <path class="d" pathLength="1" style="animation-delay:.85s" d="M108 68 l3 3 6 -6" stroke="#3ce8a4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div class="relative w-[72px] h-[72px] mx-auto rounded-2xl btn-grad grid place-items-center text-ink font-display font-extrabold text-2xl rotate-3 group-hover:rotate-0 transition-transform duration-300">1</div>
+        <h3 class="font-display font-bold text-xl mt-7">Sign Up</h3>
+        <p class="text-white/55 text-sm leading-relaxed mt-3 max-w-xs mx-auto">Create your trainer account in under 2 minutes. No credit card, no sales call — just you and your new portal.</p>
+      </div>
+
+      <div class="reveal reveal-d1 relative text-center group">
+        <!-- illustration: drag & drop blocks -->
+        <svg class="illu mx-auto mb-5 w-40 h-[6.5rem]" viewBox="0 0 150 100" stroke-width="2" aria-hidden="true">
+          <rect class="d" pathLength="1" x="22" y="14" width="62" height="18" rx="6" stroke="rgba(255,255,255,.35)"/>
+          <rect class="d" pathLength="1" style="animation-delay:.2s" x="22" y="40" width="62" height="18" rx="6" stroke="rgba(255,255,255,.35)"/>
+          <rect class="d" pathLength="1" style="animation-delay:.4s" x="36" y="66" width="62" height="18" rx="6" stroke="#c8f54a"/>
+          <path class="d" pathLength="1" style="animation-delay:.6s" d="M104 28 v22 m0 0 l-6 -6 m6 6 l6 -6" stroke="#3ce8a4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path class="d" pathLength="1" style="animation-delay:.8s" d="M112 60 v15 l4 -4 3 7 3 -1.5 -3 -7 5.5 0 Z" stroke="#c8f54a" stroke-linejoin="round"/>
+        </svg>
+        <div class="relative w-[72px] h-[72px] mx-auto rounded-2xl btn-grad grid place-items-center text-ink font-display font-extrabold text-2xl -rotate-3 group-hover:rotate-0 transition-transform duration-300">2</div>
+        <h3 class="font-display font-bold text-xl mt-7">Build Your Programs</h3>
+        <p class="text-white/55 text-sm leading-relaxed mt-3 max-w-xs mx-auto">Drag-and-drop training plans, nutrition guides and habit routines. Build once, assign to anyone.</p>
+      </div>
+
+      <div class="reveal reveal-d2 relative text-center group">
+        <!-- illustration: QR code → phone -->
+        <svg class="illu mx-auto mb-5 w-40 h-[6.5rem]" viewBox="0 0 150 100" stroke-width="2" aria-hidden="true">
+          <rect class="d" pathLength="1" x="24" y="26" width="44" height="44" rx="6" stroke="#c8f54a"/>
+          <rect class="d" pathLength="1" style="animation-delay:.2s" x="32" y="34" width="10" height="10" stroke="#c8f54a"/>
+          <rect class="d" pathLength="1" style="animation-delay:.3s" x="50" y="34" width="10" height="10" stroke="rgba(255,255,255,.4)"/>
+          <rect class="d" pathLength="1" style="animation-delay:.4s" x="32" y="52" width="10" height="10" stroke="rgba(255,255,255,.4)"/>
+          <path class="d" pathLength="1" style="animation-delay:.5s" d="M50 52 h10 v10" stroke="#c8f54a"/>
+          <path class="d" pathLength="1" style="animation-delay:.65s" d="M70 48 h12 m0 0 l-4 -4 m4 4 l-4 4" stroke="#3ce8a4" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect class="d" pathLength="1" style="animation-delay:.75s" x="88" y="12" width="40" height="76" rx="9" stroke="rgba(255,255,255,.35)"/>
+          <path class="d" pathLength="1" style="animation-delay:.85s" d="M101 18 h14" stroke="rgba(255,255,255,.35)" stroke-linecap="round"/>
+          <circle class="d" pathLength="1" style="animation-delay:.95s" cx="108" cy="50" r="10" stroke="#3ce8a4"/>
+          <path class="d" pathLength="1" style="animation-delay:1.1s" d="M104 50 l3 3 6 -6" stroke="#3ce8a4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div class="relative w-[72px] h-[72px] mx-auto rounded-2xl btn-grad grid place-items-center text-ink font-display font-extrabold text-2xl rotate-3 group-hover:rotate-0 transition-transform duration-300">3</div>
+        <h3 class="font-display font-bold text-xl mt-7">Invite Your Clients</h3>
+        <p class="text-white/55 text-sm leading-relaxed mt-3 max-w-xs mx-auto">Share a link or QR code. Clients download the app and start training immediately — free for them, always.</p>
+      </div>
+    </div>
+
+    <div class="reveal reveal-d3 text-center mt-16">
+      <a href="#pricing" class="btn-grad text-ink px-8 py-4 rounded-full font-bold inline-block">Start Free in 2 Minutes</a>
+    </div>
+  </div>
+</section>
+
+<!-- animated section connector -->
+<div class="section-link" aria-hidden="true">
+  <svg class="w-full h-full" viewBox="0 0 340 140" fill="none">
+    <path id="lp2" class="link-path" pathLength="1" d="M170 0 C170 45 245 40 245 70 C245 105 170 95 170 140" stroke="url(#lgrad2)" stroke-width="2" stroke-linecap="round"/>
+    <defs><linearGradient id="lgrad2" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#3ce8a4"/><stop offset="1" stop-color="#c8f54a"/></linearGradient></defs>
+    <circle class="link-dot" r="4" fill="#3ce8a4"><animateMotion dur="3.4s" repeatCount="indefinite"><mpath href="#lp2"/></animateMotion></circle>
+  </svg>
+</div>
+
+<!-- ======================= FEATURES ======================= -->
+<section id="features" class="relative py-24 lg:py-32">
+  <div class="absolute top-20 right-[-180px] w-[420px] h-[420px] bg-mint/7 blur-[130px] rounded-full pointer-events-none"></div>
+  <div class="max-w-7xl mx-auto px-5 lg:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <div class="reveal text-lime2 text-xs font-bold tracking-[0.25em] uppercase mb-4">Features</div>
+      <h2 class="reveal reveal-d1 font-display font-extrabold text-4xl lg:text-5xl tracking-tight">Two sides. <span class="text-grad">One system.</span></h2>
+      <p class="reveal reveal-d2 mt-5 text-white/55">A command center for you, a beautiful app for them. Built for online, in-person and hybrid coaching.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-8">
+      <!-- trainer portal -->
+      <div class="reveal card-glass shine rounded-[28px] p-8 lg:p-10">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-lime2/10 text-lime2 text-xs font-bold uppercase tracking-wider mb-6">🖥 For You — Trainer Portal</div>
+        <div class="relative mb-8 rounded-xl overflow-hidden border border-white/10 shadow-2xl group/img">
+          <img src="https://trainiza.com/images/trainer-portal/dashboard-en.webp" alt="Trainiza trainer portal dashboard" loading="lazy" class="w-full group-hover/img:scale-[1.03] transition-transform duration-500">
+          <div class="absolute inset-0 bg-gradient-to-t from-ink/50 to-transparent pointer-events-none"></div>
+        </div>
+        <div class="space-y-6">
+          <div class="flex gap-5 group">
+            <div class="w-12 h-12 shrink-0 rounded-2xl bg-lime2/10 grid place-items-center text-xl group-hover:bg-lime2/20 group-hover:scale-110 transition-all">⚡</div>
+            <div>
+              <h4 class="font-display font-bold">Workout Builder</h4>
+              <p class="text-sm text-white/55 mt-1 leading-relaxed">Create complete training plans in seconds with drag-and-drop blocks and a full exercise library.</p>
+            </div>
+          </div>
+          <div class="flex gap-5 group">
+            <div class="w-12 h-12 shrink-0 rounded-2xl bg-lime2/10 grid place-items-center text-xl group-hover:bg-lime2/20 group-hover:scale-110 transition-all">💶</div>
+            <div>
+              <h4 class="font-display font-bold">Financial Hub</h4>
+              <p class="text-sm text-white/55 mt-1 leading-relaxed">See exactly who has paid and who owes you — no more awkward chasing over chat.</p>
+            </div>
+          </div>
+          <div class="flex gap-5 group">
+            <div class="w-12 h-12 shrink-0 rounded-2xl bg-lime2/10 grid place-items-center text-xl group-hover:bg-lime2/20 group-hover:scale-110 transition-all">📊</div>
+            <div>
+              <h4 class="font-display font-bold">Client Overview</h4>
+              <p class="text-sm text-white/55 mt-1 leading-relaxed">Track progress photos, check-ins and adherence for every client from one clean dashboard.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- client app -->
+      <div class="reveal reveal-d1 card-glass shine rounded-[28px] p-8 lg:p-10">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-mint/10 text-mint text-xs font-bold uppercase tracking-wider mb-6">📱 For Them — Client App</div>
+        <div class="relative mb-8 h-[230px] rounded-xl overflow-hidden border border-white/10">
+          <div class="absolute inset-0 bg-gradient-to-br from-mint/10 to-lime2/5"></div>
+          <img src="https://trainiza.com/images/client-app/francesco.webp" alt="Trainiza client app workout screen" loading="lazy" class="absolute left-1/2 -translate-x-[110%] top-5 w-[120px] rounded-xl border border-white/15 shadow-2xl rotate-[-6deg] hover:rotate-0 hover:scale-105 transition-transform duration-500">
+          <img src="https://trainiza.com/images/client-app/chiara.webp" alt="Trainiza client app progress screen" loading="lazy" class="absolute left-1/2 translate-x-[10%] top-5 w-[120px] rounded-xl border border-white/15 shadow-2xl rotate-[6deg] hover:rotate-0 hover:scale-105 transition-transform duration-500">
+          <div class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-slate2 to-transparent pointer-events-none"></div>
+        </div>
+        <div class="space-y-6">
+          <div class="flex gap-5 group">
+            <div class="w-12 h-12 shrink-0 rounded-2xl bg-mint/10 grid place-items-center text-xl group-hover:bg-mint/20 group-hover:scale-110 transition-all">🎥</div>
+            <div>
+              <h4 class="font-display font-bold">Easy Workouts</h4>
+              <p class="text-sm text-white/55 mt-1 leading-relaxed">Video demonstrations for every exercise, so clients always train with perfect form.</p>
+            </div>
+          </div>
+          <div class="flex gap-5 group">
+            <div class="w-12 h-12 shrink-0 rounded-2xl bg-mint/10 grid place-items-center text-xl group-hover:bg-mint/20 group-hover:scale-110 transition-all">🔔</div>
+            <div>
+              <h4 class="font-display font-bold">Smart Notifications</h4>
+              <p class="text-sm text-white/55 mt-1 leading-relaxed">"Time to train!" reminders keep clients consistent without you lifting a finger.</p>
+            </div>
+          </div>
+          <div class="flex gap-5 group">
+            <div class="w-12 h-12 shrink-0 rounded-2xl bg-mint/10 grid place-items-center text-xl group-hover:bg-mint/20 group-hover:scale-110 transition-all">📈</div>
+            <div>
+              <h4 class="font-display font-bold">Visible Results</h4>
+              <p class="text-sm text-white/55 mt-1 leading-relaxed">Beautiful graphs show their strength climbing week after week — motivation built in.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- portal showcase: tabbed real screenshots -->
+    <div class="reveal mt-20">
+      <h3 class="text-center font-display font-bold text-2xl mb-2">See the portal <span class="text-grad">in action</span></h3>
+      <p class="text-center text-white/50 text-sm mb-8">Real screenshots, straight from the product.</p>
+      <div class="flex flex-wrap justify-center gap-2 mb-7" id="shotTabs">
+        <button data-shot="dashboard-en" class="shot-tab active">📊 Dashboard</button>
+        <button data-shot="workout-en" class="shot-tab">⚡ Workout Builder</button>
+        <button data-shot="exercises-en" class="shot-tab">🏋️ Exercise Library</button>
+      </div>
+      <div class="relative card-glass rounded-3xl p-2 lg:p-3 max-w-4xl mx-auto">
+        <div class="absolute -inset-6 bg-lime2/8 blur-3xl rounded-full pointer-events-none"></div>
+        <img id="shotImg" src="https://trainiza.com/images/trainer-portal/dashboard-en.webp" alt="Trainiza trainer portal" loading="lazy" class="relative rounded-2xl w-full transition-opacity duration-300 border border-white/5">
+      </div>
+    </div>
+
+    <div class="reveal reveal-d2 mt-12 flex flex-wrap justify-center gap-3 text-sm">
+      <span class="px-4 py-2 rounded-full border border-white/10 text-white/60 tick-dot">Online coaching</span>
+      <span class="px-4 py-2 rounded-full border border-white/10 text-white/60 tick-dot">In-person sessions</span>
+      <span class="px-4 py-2 rounded-full border border-white/10 text-white/60 tick-dot">Hybrid models</span>
+      <span class="px-4 py-2 rounded-full border border-white/10 text-white/60 tick-dot">iOS & Android</span>
+    </div>
+  </div>
+</section>
+
+<!-- animated section connector -->
+<div class="section-link" aria-hidden="true">
+  <svg class="w-full h-full" viewBox="0 0 340 140" fill="none">
+    <path id="lp3" class="link-path" pathLength="1" d="M170 0 C170 45 95 40 95 70 C95 105 170 95 170 140" stroke="url(#lgrad3)" stroke-width="2" stroke-linecap="round"/>
+    <defs><linearGradient id="lgrad3" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#c8f54a"/><stop offset="1" stop-color="#3ce8a4"/></linearGradient></defs>
+    <circle class="link-dot" r="4" fill="#c8f54a"><animateMotion dur="3.4s" repeatCount="indefinite"><mpath href="#lp3"/></animateMotion></circle>
+  </svg>
+</div>
+
+<!-- ======================= PRICING ======================= -->
+<section id="pricing" class="relative py-24 lg:py-32 bg-coal/50 border-y border-white/5">
+  <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-lime2/7 blur-[140px] rounded-full pointer-events-none"></div>
+  <div class="max-w-5xl mx-auto px-5 lg:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <div class="reveal text-lime2 text-xs font-bold tracking-[0.25em] uppercase mb-4">Pricing</div>
+      <h2 class="reveal reveal-d1 font-display font-extrabold text-4xl lg:text-5xl tracking-tight">Simple plans, <span class="text-grad">serious upside.</span></h2>
+      <p class="reveal reveal-d2 mt-5 text-white/55">Always free for your clients. Cancel anytime — no long-term contracts.</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-8 items-stretch">
+      <!-- standard -->
+      <div class="reveal card-glass rounded-[28px] p-9 relative overflow-hidden flex flex-col" style="border-color: rgba(200,245,74,.35)">
+        <div class="absolute top-5 right-5 px-3 py-1 rounded-full btn-grad text-ink text-[11px] font-extrabold uppercase tracking-wide">Most Popular</div>
+        <h3 class="font-display font-bold text-xl">Standard Access</h3>
+        <p class="text-sm text-white/50 mt-2">Launch today on the Trainiza app.</p>
+        <div class="mt-7 flex items-end gap-2">
+          <span class="font-display font-extrabold text-6xl text-grad">€49</span>
+          <span class="text-white/45 mb-2 text-sm">/ month</span>
+        </div>
+        <ul class="mt-8 space-y-3.5 text-sm text-white/70 flex-1">
+          <li class="flex gap-3"><span class="text-lime2">✓</span> Every feature, fully unlocked</li>
+          <li class="flex gap-3"><span class="text-lime2">✓</span> Clients download the Trainiza app (iOS & Android)</li>
+          <li class="flex gap-3"><span class="text-lime2">✓</span> Workout builder, financial hub & client tracking</li>
+          <li class="flex gap-3"><span class="text-lime2">✓</span> Free for all of your clients</li>
+          <li class="flex gap-3"><span class="text-lime2">✓</span> Set up and live within minutes</li>
+          <li class="flex gap-3"><span class="text-lime2">✓</span> Cancel anytime, export your data</li>
+        </ul>
+        <a href="#contact" class="btn-grad text-ink mt-9 block text-center px-6 py-4 rounded-full font-bold">Start Free Trial</a>
+      </div>
+
+      <!-- white label -->
+      <div class="reveal reveal-d1 card-glass rounded-[28px] p-9 flex flex-col">
+        <h3 class="font-display font-bold text-xl">White Label Premium</h3>
+        <p class="text-sm text-white/50 mt-2">Your own branded app in the stores.</p>
+        <div class="mt-7 flex items-end gap-2">
+          <span class="font-display font-extrabold text-6xl">€1,200</span>
+          <span class="text-white/45 mb-2 text-sm">one-time, from*</span>
+        </div>
+        <ul class="mt-8 space-y-3.5 text-sm text-white/70 flex-1">
+          <li class="flex gap-3"><span class="text-mint">✓</span> Custom App Store & Google Play listing</li>
+          <li class="flex gap-3"><span class="text-mint">✓</span> Your logo, your colors, your brand everywhere</li>
+          <li class="flex gap-3"><span class="text-mint">✓</span> Everything in Standard Access included</li>
+          <li class="flex gap-3"><span class="text-mint">✓</span> Premium priority support</li>
+          <li class="flex gap-3"><span class="text-mint">✓</span> Live in 2–4 weeks, done for you</li>
+        </ul>
+        <p class="text-[11px] text-white/35 mt-4">*Plus ongoing maintenance fees.</p>
+        <a href="#contact" class="mt-5 block text-center px-6 py-4 rounded-full font-bold border border-white/15 hover:border-mint/60 hover:bg-white/5 transition-all">Book a Demo Call</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- animated section connector -->
+<div class="section-link" aria-hidden="true">
+  <svg class="w-full h-full" viewBox="0 0 340 140" fill="none">
+    <path id="lp4" class="link-path" pathLength="1" d="M170 0 C170 45 245 40 245 70 C245 105 170 95 170 140" stroke="url(#lgrad4)" stroke-width="2" stroke-linecap="round"/>
+    <defs><linearGradient id="lgrad4" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#3ce8a4"/><stop offset="1" stop-color="#c8f54a"/></linearGradient></defs>
+    <circle class="link-dot" r="4" fill="#3ce8a4"><animateMotion dur="3.4s" repeatCount="indefinite"><mpath href="#lp4"/></animateMotion></circle>
+  </svg>
+</div>
+
+<!-- ======================= FAQ ======================= -->
+<section id="faq" class="py-24 lg:py-32">
+  <div class="max-w-3xl mx-auto px-5 lg:px-8">
+    <div class="text-center mb-14">
+      <div class="reveal text-lime2 text-xs font-bold tracking-[0.25em] uppercase mb-4">FAQ</div>
+      <h2 class="reveal reveal-d1 font-display font-extrabold text-4xl lg:text-5xl tracking-tight">Questions? <span class="text-grad">Answered.</span></h2>
+    </div>
+
+    <div class="space-y-4" id="faqList">
+      <div class="faq-item reveal card-glass rounded-2xl">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left font-display font-semibold">
+          Do my clients have to pay to use the app?
+          <span class="faq-chev text-2xl font-light text-white/40 shrink-0">+</span>
+        </button>
+        <div class="faq-a"><div class="overflow-hidden"><p class="px-6 pb-6 text-sm text-white/55 leading-relaxed">No — the app is completely free for your clients. You set your own coaching fees and keep that relationship; Trainiza never charges your clients anything.</p></div></div>
+      </div>
+
+      <div class="faq-item reveal card-glass rounded-2xl">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left font-display font-semibold">
+          Is it available on iOS and Android?
+          <span class="faq-chev text-2xl font-light text-white/40 shrink-0">+</span>
+        </button>
+        <div class="faq-a"><div class="overflow-hidden"><p class="px-6 pb-6 text-sm text-white/55 leading-relaxed">Yes. Your clients can download the app from both the App Store and Google Play, so everyone is covered no matter what phone they use.</p></div></div>
+      </div>
+
+      <div class="faq-item reveal card-glass rounded-2xl">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left font-display font-semibold">
+          Can I cancel my subscription anytime?
+          <span class="faq-chev text-2xl font-light text-white/40 shrink-0">+</span>
+        </button>
+        <div class="faq-a"><div class="overflow-hidden"><p class="px-6 pb-6 text-sm text-white/55 leading-relaxed">Absolutely. There are no long-term contracts — cancel whenever you like and keep full access until the end of your current billing period.</p></div></div>
+      </div>
+
+      <div class="faq-item reveal card-glass rounded-2xl">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left font-display font-semibold">
+          What happens to my client data if I leave?
+          <span class="faq-chev text-2xl font-light text-white/40 shrink-0">+</span>
+        </button>
+        <div class="faq-a"><div class="overflow-hidden"><p class="px-6 pb-6 text-sm text-white/55 leading-relaxed">Your data is yours, full stop. Before closing your account you can export everything — clients, programs and history — and take it with you.</p></div></div>
+      </div>
+
+      <div class="faq-item reveal card-glass rounded-2xl">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left font-display font-semibold">
+          How long does setup take?
+          <span class="faq-chev text-2xl font-light text-white/40 shrink-0">+</span>
+        </button>
+        <div class="faq-a"><div class="overflow-hidden"><p class="px-6 pb-6 text-sm text-white/55 leading-relaxed">On the Standard plan you can be live in minutes. White Label Premium — with your own branded app in the stores — typically takes 2–4 weeks.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= CTA / CONTACT ======================= -->
+<section id="contact" class="relative py-24 lg:py-28">
+  <div class="max-w-5xl mx-auto px-5 lg:px-8">
+    <div class="reveal relative rounded-[32px] overflow-hidden card-glass p-10 lg:p-16 text-center">
+      <div class="absolute inset-0 glow-grid opacity-60"></div>
+      <div class="absolute -top-24 left-1/2 -translate-x-1/2 w-[500px] h-[260px] bg-lime2/15 blur-[110px] rounded-full"></div>
+      <div class="relative">
+        <!-- illustration: dumbbell -->
+        <svg class="illu mx-auto mb-7 w-32 h-16 animate-float" viewBox="0 0 140 60" stroke-width="2.5" aria-hidden="true">
+          <path class="d" pathLength="1" style="animation-delay:.5s" d="M40 30 h60" stroke="rgba(255,255,255,.45)" stroke-linecap="round"/>
+          <rect class="d" pathLength="1" x="26" y="12" width="10" height="36" rx="4" stroke="#c8f54a"/>
+          <rect class="d" pathLength="1" style="animation-delay:.15s" x="14" y="19" width="8" height="22" rx="3" stroke="#3ce8a4"/>
+          <rect class="d" pathLength="1" style="animation-delay:.3s" x="104" y="12" width="10" height="36" rx="4" stroke="#c8f54a"/>
+          <rect class="d" pathLength="1" style="animation-delay:.45s" x="118" y="19" width="8" height="22" rx="3" stroke="#3ce8a4"/>
+        </svg>
+        <h2 class="font-display font-extrabold text-3xl sm:text-4xl lg:text-5xl tracking-tight">Ready to ditch the <span class="text-grad">spreadsheets?</span></h2>
+        <p class="mt-5 text-white/55 max-w-xl mx-auto">Join the coaches who upgraded from PDFs and WhatsApp to a professional coaching platform. Your free trial starts in two minutes.</p>
+
+        <form class="mt-9 flex flex-col sm:flex-row gap-3 max-w-lg mx-auto" onsubmit="event.preventDefault(); this.querySelector('button').textContent='✓ You\'re on the list!';">
+          <input type="email" required placeholder="you@yourcoachingbrand.com"
+            class="flex-1 px-6 py-4 rounded-full bg-white/5 border border-white/15 outline-none focus:border-lime2/60 focus:bg-white/8 transition-all text-sm placeholder:text-white/30" />
+          <button class="btn-grad text-ink px-8 py-4 rounded-full font-bold text-sm whitespace-nowrap">Try Free — No Card</button>
+        </form>
+
+        <div class="mt-8 flex flex-wrap justify-center items-center gap-x-8 gap-y-3 text-xs text-white/45">
+          <span class="tick-dot">Free trial, no card required</span>
+          <span class="tick-dot">Cancel anytime</span>
+          <span class="tick-dot">You own your data</span>
+        </div>
+
+        <a href="https://wa.me/18724847604" class="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-mint hover:text-lime2 transition-colors">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5 14.2c-.2.6-1.2 1.2-1.7 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.9 2.1c0 .2.1.4 0 .6l-.4.6-.4.5c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1.1 2.2 1.4 2.5 1.5.3.1.5.1.7-.1l1-1.2c.2-.3.4-.2.7-.1l2 1c.3.1.5.2.6.4 0 .1 0 .7-.2 1.2Z"/></svg>
+          Or chat with us on WhatsApp: +1 (872) 484-7604
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= FOOTER ======================= -->
+<footer class="border-t border-white/5 bg-coal/60">
+  <div class="max-w-7xl mx-auto px-5 lg:px-8 py-14 grid md:grid-cols-4 gap-10">
+    <div class="md:col-span-2">
+      <a href="#" class="flex items-center gap-2.5 font-display font-extrabold text-xl">
+        <span class="w-9 h-9 rounded-xl btn-grad grid place-items-center text-ink text-lg">T</span>
+        train<span class="text-grad -ml-1.5">iza</span>
+      </a>
+      <p class="mt-4 text-sm text-white/45 max-w-sm leading-relaxed">The all-in-one platform for personal trainers, online coaches, fitness influencers and gyms. Your business, professionally delivered — since 2023.</p>
+      <div class="mt-6 flex gap-3">
+        <a href="#" aria-label="Instagram" class="w-10 h-10 rounded-full border border-white/10 grid place-items-center text-white/50 hover:text-lime2 hover:border-lime2/50 hover:-translate-y-1 transition-all">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+        </a>
+        <a href="#" aria-label="LinkedIn" class="w-10 h-10 rounded-full border border-white/10 grid place-items-center text-white/50 hover:text-lime2 hover:border-lime2/50 hover:-translate-y-1 transition-all">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5ZM.22 8.16h4.56V23H.22V8.16Zm7.44 0h4.37v2.02h.06c.61-1.15 2.1-2.37 4.31-2.37 4.61 0 5.46 3.04 5.46 6.99V23h-4.55v-7.21c0-1.72-.03-3.93-2.4-3.93-2.4 0-2.76 1.87-2.76 3.8V23H7.66V8.16Z"/></svg>
+        </a>
+        <a href="#" aria-label="Facebook" class="w-10 h-10 rounded-full border border-white/10 grid place-items-center text-white/50 hover:text-lime2 hover:border-lime2/50 hover:-translate-y-1 transition-all">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12a12 12 0 1 0-13.88 11.85v-8.38H7.08V12h3.04V9.36c0-3 1.79-4.67 4.53-4.67 1.31 0 2.68.23 2.68.23v2.95h-1.51c-1.49 0-1.95.92-1.95 1.87V12h3.32l-.53 3.47h-2.79v8.38A12 12 0 0 0 24 12Z"/></svg>
+        </a>
+      </div>
+    </div>
+    <div>
+      <h5 class="font-display font-bold text-sm mb-4">Platform</h5>
+      <ul class="space-y-2.5 text-sm text-white/45">
+        <li><a href="#features" class="hover:text-lime2 transition-colors">Trainer Portal</a></li>
+        <li><a href="#features" class="hover:text-lime2 transition-colors">Client App</a></li>
+        <li><a href="#pricing" class="hover:text-lime2 transition-colors">Pricing</a></li>
+        <li><a href="#pricing" class="hover:text-lime2 transition-colors">White Label</a></li>
+      </ul>
+    </div>
+    <div>
+      <h5 class="font-display font-bold text-sm mb-4">Company</h5>
+      <ul class="space-y-2.5 text-sm text-white/45">
+        <li><a href="#stories" class="hover:text-lime2 transition-colors">Success Stories</a></li>
+        <li><a href="#faq" class="hover:text-lime2 transition-colors">FAQ</a></li>
+        <li><a href="#contact" class="hover:text-lime2 transition-colors">Contact</a></li>
+        <li><a href="#" class="hover:text-lime2 transition-colors">Privacy Policy</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="border-t border-white/5">
+    <div class="max-w-7xl mx-auto px-5 lg:px-8 py-6 flex flex-col sm:flex-row justify-between gap-2 text-xs text-white/35">
+      <span>© 2026 Trainiza. All rights reserved.</span>
+      <span>Made for coaches who outgrew the spreadsheet.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ---- nav blur on scroll ----
+const nav = document.getElementById('nav');
+addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 24), { passive: true });
+
+// ---- mobile menu ----
+const burger = document.getElementById('burger');
+const menu = document.getElementById('mobileMenu');
+burger.addEventListener('click', () => menu.classList.toggle('hidden'));
+menu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => menu.classList.add('hidden')));
+
+// ---- scroll reveal ----
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+// ---- animated counters ----
+const countIO = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    countIO.unobserve(e.target);
+    const to = +e.target.dataset.to, start = performance.now(), dur = 1400;
+    (function tick(now) {
+      const p = Math.min((now - start) / dur, 1);
+      e.target.textContent = Math.round(to * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) requestAnimationFrame(tick);
+    })(start);
+  });
+}, { threshold: 0.6 });
+document.querySelectorAll('.count').forEach(el => countIO.observe(el));
+
+// ---- progress ring (78%) ----
+setTimeout(() => {
+  const ring = document.getElementById('ring');
+  if (ring) ring.style.strokeDashoffset = 163 * (1 - 0.78);
+}, 600);
+
+// ---- cursor shine on cards ----
+document.querySelectorAll('.shine').forEach(card => {
+  card.addEventListener('pointermove', e => {
+    const r = card.getBoundingClientRect();
+    card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+    card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  });
+});
+
+// ---- FAQ accordion ----
+document.querySelectorAll('.faq-q').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const item = btn.closest('.faq-item');
+    const wasOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+    if (!wasOpen) item.classList.add('open');
+  });
+});
+
+// ---- section connector lines: draw on scroll ----
+const linkPaths = document.querySelectorAll('.link-path');
+function drawLinks() {
+  linkPaths.forEach(p => {
+    const r = p.ownerSVGElement.getBoundingClientRect();
+    const prog = Math.min(Math.max((innerHeight * 0.9 - r.top) / (r.height + innerHeight * 0.25), 0), 1);
+    p.style.strokeDashoffset = 1 - prog;
+    const dot = p.ownerSVGElement.querySelector('.link-dot');
+    if (dot) dot.style.opacity = prog > 0.65 ? 1 : 0;
+  });
+}
+addEventListener('scroll', drawLinks, { passive: true });
+addEventListener('resize', drawLinks, { passive: true });
+drawLinks();
+
+// ---- portal screenshot tabs ----
+const shotImg = document.getElementById('shotImg');
+['dashboard-en','workout-en','exercises-en'].forEach(n => { const i = new Image(); i.src = `https://trainiza.com/images/trainer-portal/${n}.webp`; });
+document.querySelectorAll('.shot-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.shot-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    shotImg.style.opacity = 0;
+    setTimeout(() => {
+      shotImg.onload = () => { shotImg.style.opacity = 1; };
+      shotImg.src = `https://trainiza.com/images/trainer-portal/${btn.dataset.shot}.webp`;
+    }, 250);
+  });
+});
+
+// ---- duplicate marquee content for seamless loop ----
+const mq = document.getElementById('marquee');
+mq.appendChild(mq.firstElementChild.cloneNode(true));
+</script>
+</body>
+</html>

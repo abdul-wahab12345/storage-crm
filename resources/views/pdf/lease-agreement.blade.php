@@ -32,7 +32,7 @@
 body { color: #1e293b; background: #fff; font-size: 12.5px; line-height: 1.6; }
 
 /* ── Header ── */
-.header-wrap { background: #F97316; padding: 16px 30px; }
+.header-wrap { background: #EA580C; padding: 16px 30px; }
 .header-table { width: 100%; }
 .brand-sub { font-size: 10px; color: rgba(255,255,255,0.82); margin-top: 4px; line-height: 1.4; }
 .doc-title { font-size: 16px; font-weight: 700; color: #fff; text-align: right; letter-spacing: -0.3px; }
@@ -44,11 +44,11 @@ body { color: #1e293b; background: #fff; font-size: 12.5px; line-height: 1.6; }
 /* ── Agreement number banner ── */
 .agr-banner { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 5px; padding: 8px 16px; margin-bottom: 24px; }
 .agr-banner-table { width: 100%; }
-.agr-no { font-size: 11px; font-weight: 700; color: #F97316; text-transform: uppercase; letter-spacing: 1px; }
+.agr-no { font-size: 11px; font-weight: 700; color: #EA580C; text-transform: uppercase; letter-spacing: 1px; }
 .agr-date { font-size: 11px; color: #92400e; text-align: right; }
 
 /* ── Section headers ── */
-h2 { font-size: 12px; font-weight: 700; color: #fff; background: #F97316; text-transform: uppercase;
+h2 { font-size: 12px; font-weight: 700; color: #fff; background: #EA580C; text-transform: uppercase;
      letter-spacing: 1px; padding: 6px 10px 4px; margin: 18px 0 10px; border-radius: 3px; line-height: 1.2; }
 
 /* ── Info table ── */
@@ -149,6 +149,18 @@ h2 { font-size: 12px; font-weight: 700; color: #fff; background: #F97316; text-t
                             <td class="label">Address</td>
                             <td class="value">{{ $lease->tenant->address ?? '—' }}</td>
                         </tr>
+                        @if($lease->storage_type)
+                        <tr>
+                            <td class="label">Storage Type</td>
+                            <td class="value">{{ ucfirst($lease->storage_type) }}</td>
+                        </tr>
+                        @endif
+                        @if($lease->goods_condition)
+                        <tr>
+                            <td class="label">Goods Condition</td>
+                            <td class="value">{{ ucfirst($lease->goods_condition) }}</td>
+                        </tr>
+                        @endif
                     </table>
                 </td>
                 <td class="col-r">
@@ -192,7 +204,7 @@ h2 { font-size: 12px; font-weight: 700; color: #fff; background: #F97316; text-t
                         </tr>
                         <tr>
                             <td class="label">Monthly Rate</td>
-                            <td class="value" style="font-weight:700; color:#F97316;">{{ \App\Models\Setting::money($lease->monthly_rate) }}</td>
+                            <td class="value" style="font-weight:700; color:#EA580C;">{{ \App\Models\Setting::money($lease->monthly_rate) }}</td>
                         </tr>
                         <tr>
                             <td class="label">Billing Day</td>
@@ -257,96 +269,8 @@ h2 { font-size: 12px; font-weight: 700; color: #fff; background: #F97316; text-t
 
         {{-- CONDITIONS OF AGREEMENT --}}
         <h2>Conditions of Agreement</h2>
-        <div class="conditions-wrap">
-
-            <div class="cond-item">
-                <div class="cond-title">1. Customer</div>
-                <div class="cond-sub">
-                    (a) Can store goods in the space given by the management and is deemed to know the goods in the storage space.<br>
-                    (b) Warrants that they own the goods in the space and are entitled by law to deal with them in all aspects of this agreement.
-                </div>
-            </div>
-
-            <div class="cond-item">
-                <div class="cond-title">2. Cost</div>
-                <div class="cond-sub">
-                    (a) The customer must pay rent to the management upon signing the agreement.<br>
-                    (b) The storage fee is the amount indicated in this agreement or as notified by management from time to time.<br>
-                    (c) The storage fee is payable in advance; it is the customer's responsibility to make payment on time and in full.<br>
-                    (d) Late payment fees become payable each time a payment is late.
-                </div>
-            </div>
-
-            <div class="cond-item">
-                <div class="cond-title">3. Default</div>
-                <div class="cond-sub">
-                    If the storage fee or any money owing under this agreement is not paid in full within 30 days of the due date,
-                    management will not allow access to the space and will seize the goods.
-                </div>
-            </div>
-
-            <div class="cond-item">
-                <div class="cond-title">4. Notice</div>
-                <div class="cond-sub">
-                    (a) When the customer has not paid for more than 1 month, management will issue 3 notices: at 7 days, 14 days,
-                    and 30 days. After the third notice the agreement will be cancelled and stored goods will be seized.<br>
-                    (b) Notices will be given by email, SMS, or phone call. Notice will be a soft copy with a stamp.
-                </div>
-            </div>
-
-            <div class="cond-item">
-                <div class="cond-title">5. Termination</div>
-                <div class="cond-sub">
-                    (a) Either party may terminate this agreement by giving the other party written notice. In the event of illegal or
-                    environmentally harmful activities, management may terminate without notice.<br>
-                    (b) The customer must remove all goods before the close of business on the termination date and leave the space clean.<br>
-                    (c) After the third notice, the agreement will automatically be terminated.
-                </div>
-            </div>
-
-            <div class="cond-item">
-                <div class="cond-title">6. Right to Dispose</div>
-                <div class="cond-sub">
-                    (a) If a defaulting customer's goods are not saleable or of insufficient value, management may dispose of all goods by any means.<br>
-                    (b) Upon termination, if the customer fails to remove all goods, management may dispose of them 7 days from the final notice.<br>
-                    (c) Items left unattended in common areas may be disposed of immediately at management's discretion.
-                </div>
-            </div>
-
-            <div class="cond-item">
-                <div class="cond-title">7. Access &amp; Conditions</div>
-                <div class="cond-sub">
-                    The customer must notify management in writing of any change of address, phone number, or email within 24 hours of the change.
-                    Agreement made in the name of the customer — only the signing customer may access or collect stored goods.
-                    No other person claiming ownership will be entertained.
-                </div>
-            </div>
-
-            <div class="cond-item">
-                <div class="cond-title">8. Risk &amp; Responsibility</div>
-                <div class="cond-sub">
-                    Delight Box Storage shall bear risk of damage caused by fire, theft, and pest only under insurance policy.
-                    The customer agrees to indemnify management from all claims for loss, damage, or personal injury resulting from
-                    the use of the space by the customer.
-                </div>
-            </div>
-
-            <div class="cond-item">
-                <div class="cond-title">9. Inspection &amp; Entry by Management</div>
-                <div class="cond-sub">
-                    In the event of an emergency, or where obliged by law, management may enter the space using all necessary force
-                    without the customer's consent, but shall notify the customer as soon as practicable. The customer consents to such entry.
-                </div>
-            </div>
-
-            <div class="cond-item">
-                <div class="cond-title">10. Mediation of Disputes</div>
-                <div class="cond-sub">
-                    The parties must endeavour to settle any dispute in connection with this agreement by mediation, conducted by an
-                    independent mediator appointed by agreement of the parties.
-                </div>
-            </div>
-
+        <div class="conditions-wrap" style="font-size: 11.5px; line-height: 1.55; text-align: justify; color: #374151;">
+            {!! $lease->custom_terms ?: \App\Models\Setting::get('agreement_terms_conditions', '<p>No terms configured.</p>') !!}
         </div>
 
         @if ($lease->notes)

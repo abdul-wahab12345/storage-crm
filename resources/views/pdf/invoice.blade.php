@@ -24,7 +24,7 @@ body { color: #1e293b; background: #fff; font-size: 13px; line-height: 1.5; }
 .page { padding: 0 0 36px 0; }
 
 /* ── Header ── */
-.header-wrap { background: #F97316; padding: 24px 40px; margin-bottom: 28px; }
+.header-wrap { background: #EA580C; padding: 24px 40px; margin-bottom: 28px; }
 .header-table { width: 100%; }
 .brand-sub { font-size: 11px; color: rgba(255,255,255,0.85); margin-top: 6px; line-height: 1.6; }
 .meta-right { text-align: right; vertical-align: top; }
@@ -68,7 +68,7 @@ body { color: #1e293b; background: #fff; font-size: 13px; line-height: 1.5; }
 .totals-row-table td.label { color: #64748b; }
 .totals-row-table td.amount { text-align: right; font-weight: 700; }
 .totals-divider { border-top: 2px solid #1e293b; }
-.totals-final td { padding-top: 10px; font-size: 17px; font-weight: 700; color: #F97316; }
+.totals-final td { padding-top: 10px; font-size: 17px; font-weight: 700; color: #EA580C; }
 .clearfix { clear: both; }
 
 /* ── Payments ── */

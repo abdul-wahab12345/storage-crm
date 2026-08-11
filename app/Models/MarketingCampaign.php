@@ -14,6 +14,7 @@ class MarketingCampaign extends Model
         'name',
         'template_name',
         'language_code',
+        'target_audience',
         'audience_type',
         'tenant_ids',
         'body_variables',
@@ -44,10 +45,15 @@ class MarketingCampaign extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function buildTenantQuery(): \Illuminate\Database\Eloquent\Builder
+    public function buildAudienceQuery(): \Illuminate\Database\Eloquent\Builder
     {
-        $query = Tenant::whereNotNull('whatsapp_number')
-            ->where('whatsapp_number', '!=', '');
+        if ($this->target_audience === 'contacts') {
+            $query = CampaignContact::whereNotNull('whatsapp_number')
+                ->where('whatsapp_number', '!=', '');
+        } else {
+            $query = Tenant::whereNotNull('whatsapp_number')
+                ->where('whatsapp_number', '!=', '');
+        }
 
         if ($this->audience_type === 'selected') {
             $query->whereIn('id', $this->tenant_ids ?? []);
@@ -58,20 +64,21 @@ class MarketingCampaign extends Model
         return $query;
     }
 
-    public function resolveVariable(Tenant $tenant, array $variable): string
+    public function resolveVariable(Model $recipient, array $variable): string
     {
         if ($variable['type'] === 'static') {
             return (string) ($variable['value'] ?? '');
         }
 
         return match ($variable['value'] ?? '') {
-            'full_name'        => $tenant->full_name,
-            'first_name'       => $tenant->first_name,
-            'last_name'        => $tenant->last_name,
-            'email'            => $tenant->email ?? '',
-            'phone'            => $tenant->phone ?? '',
-            'whatsapp_number'  => $tenant->whatsapp_number ?? '',
-            'address'          => $tenant->address ?? '',
+            'full_name'        => $recipient->full_name ?? '',
+            'name'             => $recipient->name ?? '',
+            'first_name'       => $recipient->first_name ?? '',
+            'last_name'        => $recipient->last_name ?? '',
+            'email'            => $recipient->email ?? '',
+            'phone'            => $recipient->phone ?? '',
+            'whatsapp_number'  => $recipient->whatsapp_number ?? '',
+            'address'          => $recipient->address ?? '',
             default            => '',
         };
     }

@@ -39,7 +39,7 @@ body { color: #1e293b; background: #fff; font-size: 13px; line-height: 1.6; }
 .card { background: #fff; }
 
 /* ── Header ── */
-.header-wrap { background: #F97316; padding: 28px 32px 24px; }
+.header-wrap { background: #EA580C; padding: 28px 32px 24px; }
 .header-table { width: 100%; }
 .brand-sub { font-size: 11px; color: rgba(255,255,255,0.8); margin-top: 5px; line-height: 1.7; }
 .receipt-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.65); }
@@ -58,7 +58,7 @@ body { color: #1e293b; background: #fff; font-size: 13px; line-height: 1.6; }
 /* ── Amount block ── */
 .amount-block { text-align: center; padding: 24px 20px; border-bottom: 1px solid #f1f5f9; margin-bottom: 24px; }
 .amount-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; margin-bottom: 8px; }
-.amount-value { font-size: 42px; font-weight: 700; color: #F97316; letter-spacing: -1px; }
+.amount-value { font-size: 42px; font-weight: 700; color: #EA580C; letter-spacing: -1px; }
 
 /* ── Two-column info ── */
 .info-section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #f1f5f9; }
@@ -205,7 +205,7 @@ body { color: #1e293b; background: #fff; font-size: 13px; line-height: 1.6; }
                 </tr>
                 <tr>
                     <td class="bl">Amount Paid</td>
-                    <td class="br" style="color:#F97316;">- {{ \App\Models\Setting::money($payment->amount) }}</td>
+                    <td class="br" style="color:#EA580C;">- {{ \App\Models\Setting::money($payment->amount) }}</td>
                 </tr>
                 <tr class="balance-total">
                     <td class="bl">Remaining Balance</td>

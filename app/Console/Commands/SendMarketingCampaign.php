@@ -36,24 +36,26 @@ class SendMarketingCampaign extends Command
 
         $isDryRun    = $this->option('dry-run');
         $delayMs     = (int) $this->option('delay');
-        $query       = $campaign->buildTenantQuery();
+        $query       = $campaign->buildAudienceQuery();
         $total       = $query->count();
 
         $this->info("Campaign: {$campaign->name}");
         $this->info("Template: {$campaign->template_name} [{$campaign->language_code}]");
+        $this->info("Target: {$campaign->target_audience}");
         $this->info("Audience: {$campaign->audience_type} — {$total} recipients with WhatsApp numbers");
         $this->newLine();
 
         if ($total === 0) {
-            $this->warn('No recipients found. Check audience settings and that tenants have WhatsApp numbers.');
+            $this->warn('No recipients found. Check audience settings and that contacts have WhatsApp numbers.');
             return self::SUCCESS;
         }
 
         if ($isDryRun) {
             $this->info('[DRY RUN] Recipients:');
-            $query->chunk(100, function ($tenants) {
-                foreach ($tenants as $tenant) {
-                    $this->line("  • {$tenant->full_name} — {$tenant->whatsapp_number}");
+            $query->chunk(100, function ($recipients) {
+                foreach ($recipients as $recipient) {
+                    $name = $recipient->full_name ?? $recipient->name;
+                    $this->line("  • {$name} — {$recipient->whatsapp_number}");
                 }
             });
             $this->newLine();
@@ -75,21 +77,21 @@ class SendMarketingCampaign extends Command
         $bar    = $this->output->createProgressBar($total);
         $bar->start();
 
-        $query->chunk(100, function ($tenants) use (
+        $query->chunk(100, function ($recipients) use (
             $campaign, $whatsApp, $delayMs, &$sent, &$failed, $bar
         ) {
-            foreach ($tenants as $tenant) {
+            foreach ($recipients as $recipient) {
                 $bodyParams = [];
 
                 foreach (($campaign->body_variables ?? []) as $variable) {
-                    $value = $campaign->resolveVariable($tenant, $variable);
+                    $value = $campaign->resolveVariable($recipient, $variable);
                     // WhatsApp limits body text parameters to 30 characters
                     $value = mb_substr(trim($value) ?: '-', 0, 30);
                     $bodyParams[] = ['type' => 'text', 'text' => $value];
                 }
 
                 $success = $whatsApp->sendTemplateMessage(
-                    to:                $tenant->whatsapp_number,
+                    to:                $recipient->whatsapp_number,
                     templateName:      $campaign->template_name,
                     languageCode:      $campaign->language_code,
                     bodyParams:        $bodyParams,

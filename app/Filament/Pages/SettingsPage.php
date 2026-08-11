@@ -37,6 +37,7 @@ class SettingsPage extends Page implements HasForms
     {
         $this->form->fill([
             'terms_conditions' => Setting::get('terms_conditions'),
+            'agreement_terms_conditions' => Setting::get('agreement_terms_conditions'),
             'quote_terms_conditions' => Setting::get('quote_terms_conditions'),
             'company_name' => Setting::get('company_name'),
             'company_address' => Setting::get('company_address'),
@@ -119,6 +120,14 @@ class SettingsPage extends Page implements HasForms
                         Forms\Components\Textarea::make('terms_conditions')
                             ->label('Invoice Terms & Conditions')
                             ->rows(6)
+                            ->columnSpanFull(),
+                    ]),
+
+                Forms\Components\Section::make('Lease Agreement Terms & Conditions')
+                    ->description('Default terms for new lease agreements. Will be overridden if custom terms are set on a specific lease.')
+                    ->schema([
+                        Forms\Components\RichEditor::make('agreement_terms_conditions')
+                            ->label('Agreement Terms & Conditions')
                             ->columnSpanFull(),
                     ]),
 

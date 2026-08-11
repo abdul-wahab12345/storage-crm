@@ -21,6 +21,9 @@ class Lease extends Model
         'notes',
         'space_details',
         'signed_agreement_path',
+        'storage_type',
+        'goods_condition',
+        'custom_terms',
     ];
 
     protected function casts(): array

@@ -30,12 +30,6 @@ class MarketingCampaignResource extends Resource
 
     public static function form(Form $form): Form
     {
-        $tenantOptions = Tenant::whereNotNull('whatsapp_number')
-            ->where('whatsapp_number', '!=', '')
-            ->get()
-            ->mapWithKeys(fn ($t) => [$t->id => "{$t->full_name} ({$t->whatsapp_number})"])
-            ->toArray();
-
         return $form->schema([
 
             Forms\Components\Section::make('Campaign Details')
@@ -71,12 +65,22 @@ class MarketingCampaignResource extends Resource
 
             Forms\Components\Section::make('Audience')
                 ->schema([
+                    Forms\Components\Select::make('target_audience')
+                        ->label('Target List')
+                        ->options([
+                            'tenants' => 'Existing Customers (Tenants)',
+                            'contacts' => 'External Contacts (CSV Imports)',
+                        ])
+                        ->default('tenants')
+                        ->live()
+                        ->required(),
+
                     Forms\Components\Radio::make('audience_type')
                         ->label('Who receives this campaign?')
                         ->options([
-                            'all'        => 'All customers with WhatsApp numbers',
-                            'all_except' => 'All except selected customers',
-                            'selected'   => 'Selected customers only',
+                            'all'        => 'All in selected list',
+                            'all_except' => 'All except selected',
+                            'selected'   => 'Selected only',
                         ])
                         ->default('all')
                         ->live()
@@ -84,14 +88,25 @@ class MarketingCampaignResource extends Resource
 
                     Forms\Components\Select::make('tenant_ids')
                         ->label(fn (Get $get) => $get('audience_type') === 'all_except'
-                            ? 'Exclude these customers'
-                            : 'Select customers')
-                        ->options($tenantOptions)
+                            ? 'Exclude these recipients'
+                            : 'Select recipients')
+                        ->options(function (Get $get) {
+                            if ($get('target_audience') === 'contacts') {
+                                return \App\Models\CampaignContact::all()
+                                    ->mapWithKeys(fn ($c) => [$c->id => "{$c->name} ({$c->whatsapp_number})"])
+                                    ->toArray();
+                            }
+                            return Tenant::whereNotNull('whatsapp_number')
+                                ->where('whatsapp_number', '!=', '')
+                                ->get()
+                                ->mapWithKeys(fn ($t) => [$t->id => "{$t->full_name} ({$t->whatsapp_number})"])
+                                ->toArray();
+                        })
                         ->multiple()
                         ->searchable()
                         ->visible(fn (Get $get) => in_array($get('audience_type'), ['all_except', 'selected']))
                         ->required(fn (Get $get) => in_array($get('audience_type'), ['all_except', 'selected']))
-                        ->helperText('Only customers with a WhatsApp number are listed.'),
+                        ->helperText('Only recipients with a valid WhatsApp number are listed.'),
                 ]),
 
             Forms\Components\Section::make('Template Variables')
@@ -111,16 +126,24 @@ class MarketingCampaignResource extends Resource
                                 ->required(),
 
                             Forms\Components\Select::make('value')
-                                ->label('Customer field')
-                                ->options([
-                                    'full_name'       => 'Full Name',
-                                    'first_name'      => 'First Name',
-                                    'last_name'       => 'Last Name',
-                                    'email'           => 'Email',
-                                    'phone'           => 'Phone',
-                                    'whatsapp_number' => 'WhatsApp Number',
-                                    'address'         => 'Address',
-                                ])
+                                ->label('Mapped field')
+                                ->options(function (Get $get) {
+                                    if ($get('../../target_audience') === 'contacts') {
+                                        return [
+                                            'name' => 'Name',
+                                            'whatsapp_number' => 'WhatsApp Number',
+                                        ];
+                                    }
+                                    return [
+                                        'full_name'       => 'Full Name',
+                                        'first_name'      => 'First Name',
+                                        'last_name'       => 'Last Name',
+                                        'email'           => 'Email',
+                                        'phone'           => 'Phone',
+                                        'whatsapp_number' => 'WhatsApp Number',
+                                        'address'         => 'Address',
+                                    ];
+                                })
                                 ->visible(fn (Get $get) => $get('type') === 'field')
                                 ->required(fn (Get $get) => $get('type') === 'field'),
 
@@ -254,7 +277,7 @@ class MarketingCampaignResource extends Resource
                     ->color('gray')
                     ->visible(fn (MarketingCampaign $r) => $r->status === 'draft')
                     ->action(function (MarketingCampaign $record) {
-                        $count = $record->buildTenantQuery()->count();
+                        $count = $record->buildAudienceQuery()->count();
                         Notification::make()
                             ->title("Preview: {$count} recipient(s)")
                             ->body("Run: php artisan marketing:send {$record->id} --dry-run to see the full list in your terminal.")

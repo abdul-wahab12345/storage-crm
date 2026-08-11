@@ -101,14 +101,40 @@ class LeaseResource extends Resource
                 ])
                 ->columns(2),
 
-            Forms\Components\Section::make('Notes')
+            Forms\Components\Section::make('Storage Category & Specifics')
                 ->schema([
-                    Forms\Components\Textarea::make('notes')->rows(3),
+                    Forms\Components\Select::make('storage_type')
+                        ->label('Storage Type')
+                        ->options([
+                            'business' => 'Business',
+                            'personal' => 'Personal',
+                        ])
+                        ->placeholder('Select storage type')
+                        ->native(false),
+                    Forms\Components\Select::make('goods_condition')
+                        ->label('Condition of Goods')
+                        ->options([
+                            'new' => 'New',
+                            'used' => 'Used',
+                        ])
+                        ->placeholder('Select goods condition')
+                        ->native(false),
+                ])
+                ->columns(2)
+                ->collapsible(),
+
+            Forms\Components\Section::make('Notes & Custom Terms')
+                ->schema([
+                    Forms\Components\Textarea::make('notes')->rows(3)->columnSpanFull(),
                     Forms\Components\TextInput::make('space_details')
                         ->label('Space Details')
                         ->placeholder('e.g. Unit 12B – Ground Floor, Near Entrance')
                         ->helperText('Optional. If set, this replaces the unit number on invoices and receipts.')
-                        ->maxLength(255),
+                        ->maxLength(255)->columnSpanFull(),
+                    Forms\Components\RichEditor::make('custom_terms')
+                        ->label('Custom Agreement Terms')
+                        ->helperText('Leave blank to use the default terms configured in Settings. Any text entered here will completely override the default conditions on this specific Lease Agreement PDF.')
+                        ->columnSpanFull(),
                 ])
                 ->collapsible(),
 
@@ -186,6 +212,23 @@ class LeaseResource extends Resource
                     ->color('info')
                     ->url(fn (Lease $record) => route('leases.agreement.pdf', $record))
                     ->openUrlInNewTab(),
+                Tables\Actions\Action::make('move_out_form')
+                    ->label('Move Out Form')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->color('warning')
+                    ->form([
+                        Forms\Components\DatePicker::make('move_out_date')
+                            ->label('Actual Move Out Date')
+                            ->default(fn (Lease $record) => $record->move_out_date ?: now())
+                            ->required(),
+                    ])
+                    ->action(function (Lease $record, array $data) {
+                        $form = \App\Models\MoveOutForm::updateOrCreate(
+                            ['lease_id' => $record->id],
+                            ['move_out_date' => $data['move_out_date']]
+                        );
+                        return app(\App\Services\MoveOutFormPdfService::class)->download($form);
+                    }),
                 Tables\Actions\Action::make('terminate')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
