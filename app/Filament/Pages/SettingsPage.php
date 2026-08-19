@@ -38,6 +38,7 @@ class SettingsPage extends Page implements HasForms
         $this->form->fill([
             'terms_conditions' => Setting::get('terms_conditions'),
             'agreement_terms_conditions' => Setting::get('agreement_terms_conditions'),
+            'banking_information' => Setting::get('banking_information'),
             'quote_terms_conditions' => Setting::get('quote_terms_conditions'),
             'company_name' => Setting::get('company_name'),
             'company_address' => Setting::get('company_address'),
@@ -98,9 +99,15 @@ class SettingsPage extends Page implements HasForms
                             ->live()
                             ->afterStateUpdated(function ($state, Forms\Set $set) {
                                 $map = [
-                                    'USD' => '$', 'EUR' => '€', 'GBP' => '£',
-                                    'PKR' => 'PKR ', 'SAR' => 'SAR ', 'AED' => 'AED ',
-                                    'INR' => '₹', 'CAD' => 'CA$', 'AUD' => 'A$',
+                                    'USD' => '$',
+                                    'EUR' => '€',
+                                    'GBP' => '£',
+                                    'PKR' => 'PKR ',
+                                    'SAR' => 'SAR ',
+                                    'AED' => 'AED ',
+                                    'INR' => '₹',
+                                    'CAD' => 'CA$',
+                                    'AUD' => 'A$',
                                 ];
                                 if (isset($map[$state])) {
                                     $set('currency_symbol', $map[$state]);
@@ -128,6 +135,14 @@ class SettingsPage extends Page implements HasForms
                     ->schema([
                         Forms\Components\RichEditor::make('agreement_terms_conditions')
                             ->label('Agreement Terms & Conditions')
+                            ->columnSpanFull(),
+                    ]),
+
+                Forms\Components\Section::make('Banking Information')
+                    ->description('Displayed on invoices to instruct customers how to pay.')
+                    ->schema([
+                        Forms\Components\RichEditor::make('banking_information')
+                            ->label('Bank Details / Instructions')
                             ->columnSpanFull(),
                     ]),
 

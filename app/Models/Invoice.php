@@ -24,6 +24,7 @@ class Invoice extends Model
         'status',
         'paid_at',
         'notes',
+        'additional_fees',
     ];
 
     protected function casts(): array
@@ -37,13 +38,14 @@ class Invoice extends Model
             'period_start' => 'date',
             'period_end' => 'date',
             'paid_at' => 'datetime',
+            'additional_fees' => 'array',
         ];
     }
 
     protected static function booted(): void
     {
         static::creating(function (Invoice $invoice) {
-            if (! $invoice->invoice_number) {
+            if (!$invoice->invoice_number) {
                 $invoice->invoice_number = 'INV-' . now()->format('Ymd') . '-' . str_pad(
                     static::whereYear('created_at', now()->year)->count() + 1,
                     5,
@@ -51,10 +53,20 @@ class Invoice extends Model
                     STR_PAD_LEFT
                 );
             }
+        });
 
-            if (! $invoice->total) {
-                $invoice->total = $invoice->amount + ($invoice->late_fee ?? 0);
+        static::saving(function (Invoice $invoice) {
+            $base = (float) ($invoice->amount ?? 0);
+            $late = (float) ($invoice->custom_late_fee ?? $invoice->late_fee ?? 0);
+            $additional = 0;
+
+            if (is_array($invoice->additional_fees)) {
+                foreach ($invoice->additional_fees as $fee) {
+                    $additional += (float) ($fee['amount'] ?? 0);
+                }
             }
+
+            $invoice->total = $base + $late + $additional;
         });
     }
 
