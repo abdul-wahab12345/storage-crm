@@ -258,6 +258,30 @@ class InvoiceResource extends Resource
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()
                     ->visible(fn() => auth()->user()?->isAdmin()),
+                Tables\Actions\Action::make('send_email')
+                    ->label('Send Email')
+                    ->icon('heroicon-o-paper-airplane')
+                    ->color('info')
+                    ->action(function (\App\Models\Invoice $record) {
+                        if ($record->tenant->email) {
+                            $record->tenant->notify(new \App\Notifications\InvoiceGeneratedNotification($record));
+                            \Filament\Notifications\Notification::make()
+                                ->title('Email sent successfully')
+                                ->success()
+                                ->send();
+                        } else {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Tenant has no email address')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
+                Tables\Actions\Action::make('download_pdf')
+                    ->label('Download PDF')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->url(fn (\App\Models\Invoice $record) => route('invoices.pdf', $record))
+                    ->openUrlInNewTab()
+                    ->visible(fn() => auth()->user()?->isAdmin()),
                 Tables\Actions\Action::make('recordPayment')
                     ->label('Record Payment')
                     ->icon('heroicon-o-banknotes')

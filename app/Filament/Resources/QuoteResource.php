@@ -157,11 +157,20 @@ class QuoteResource extends Resource
                 ])
                 ->columns(4),
 
+            Forms\Components\Section::make('Scope of Work')
+                ->schema([
+                    Forms\Components\RichEditor::make('scope_of_work')
+                        ->label('Scope of Work')
+                        ->toolbarButtons(['bold', 'italic', 'underline', 'bulletList', 'orderedList', 'h2', 'h3', 'link'])
+                        ->columnSpanFull(),
+                ])
+                ->collapsible(),
+
             Forms\Components\Section::make('Terms & Conditions')
                 ->schema([
-                    Forms\Components\Textarea::make('terms_conditions')
+                    Forms\Components\RichEditor::make('terms_conditions')
                         ->label('Terms & Conditions')
-                        ->rows(5)
+                        ->toolbarButtons(['bold', 'italic', 'underline', 'bulletList', 'orderedList', 'h2', 'h3', 'link'])
                         ->default(fn () => Setting::get('quote_terms_conditions'))
                         ->helperText('Pre-filled from Settings → Quote Terms & Conditions. Editable per-quote.')
                         ->columnSpanFull(),
@@ -252,8 +261,39 @@ class QuoteResource extends Resource
                     ->multiple(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('send_email')
+                    ->label('Send Email')
+                    ->icon('heroicon-o-paper-airplane')
+                    ->color('info')
+                    ->action(function (\App\Models\Quote $record) {
+                        if ($record->client_email) {
+                            $pdfPath = app(\App\Services\QuotePdfService::class)->generateAndStore($record);
+                            
+                            $content = "A new quote has been generated for you.\n\n" .
+                                       "Quote #: {$record->quote_number}\n" .
+                                       "Total: " . \App\Models\Setting::currency() . number_format((float) $record->total, 2);
+
+                            \Illuminate\Support\Facades\Mail::to($record->client_email)->send(
+                                new \App\Mail\DocumentMail(
+                                    "Quote {$record->quote_number} — StorageCRM",
+                                    $content,
+                                    \Illuminate\Support\Facades\Storage::disk('local')->path($pdfPath),
+                                    "quote-{$record->quote_number}.pdf"
+                                )
+                            );
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Email sent successfully')
+                                ->success()
+                                ->send();
+                        } else {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Client has no email address')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
                 Tables\Actions\Action::make('downloadPdf')
                     ->label('PDF')
                     ->icon('heroicon-o-arrow-down-tray')

@@ -3,6 +3,7 @@
     $companyAddress = \App\Models\Setting::get('company_address', '');
     $companyPhone = \App\Models\Setting::get('company_phone', '');
     $companyEmail = \App\Models\Setting::get('company_email', '');
+    $trn = \App\Models\Setting::get('trn_number');
     $invoice = $payment->invoice;
     $tenant = $invoice->tenant;
 
@@ -56,7 +57,7 @@
 
         /* ── Header ── */
         .header-wrap {
-            background: #EA580C;
+            background: #fa7e11;
             padding: 28px 32px 24px;
         }
 
@@ -142,7 +143,7 @@
         .amount-value {
             font-size: 42px;
             font-weight: 700;
-            color: #EA580C;
+            color: #fa7e11;
             letter-spacing: -1px;
         }
 
@@ -296,6 +297,7 @@
                                 <div style="font-size:22px; font-weight:700; color:#fff;">{{ $company }}</div>
                             @endif
                             <div class="brand-sub">
+                                @if ($trn) TRN: {{ $trn }}<br> @endif
                                 @if ($companyAddress){{ $companyAddress }}<br>@endif
                                 @if ($companyPhone){{ $companyPhone }}@if($companyEmail) &nbsp;·&nbsp;
                                 {{ $companyEmail }}@endif@endif
@@ -396,7 +398,7 @@
                         </tr>
                         <tr>
                             <td class="bl">Amount Paid</td>
-                            <td class="br" style="color:#EA580C;">- {{ \App\Models\Setting::money($payment->amount) }}
+                            <td class="br" style="color:#fa7e11;">- {{ \App\Models\Setting::money($payment->amount) }}
                             </td>
                         </tr>
                         <tr class="balance-total">

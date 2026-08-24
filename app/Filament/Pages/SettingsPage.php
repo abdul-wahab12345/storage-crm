@@ -72,6 +72,10 @@ class SettingsPage extends Page implements HasForms
                             ->label('Company Phone')
                             ->tel()
                             ->maxLength(20),
+                        Forms\Components\TextInput::make('trn_number')
+                            ->label('TRN Number')
+                            ->placeholder('e.g. 100000000000003')
+                            ->maxLength(255),
                         Forms\Components\Textarea::make('company_address')
                             ->label('Company Address')
                             ->rows(2)
@@ -124,9 +128,9 @@ class SettingsPage extends Page implements HasForms
                 Forms\Components\Section::make('Invoice Terms & Conditions')
                     ->description('Displayed at the bottom of all invoices and in the invoice PDF.')
                     ->schema([
-                        Forms\Components\Textarea::make('terms_conditions')
+                        Forms\Components\RichEditor::make('terms_conditions')
                             ->label('Invoice Terms & Conditions')
-                            ->rows(6)
+                            ->toolbarButtons(['bold', 'italic', 'underline', 'bulletList', 'orderedList', 'h2', 'h3', 'link'])
                             ->columnSpanFull(),
                     ]),
 
@@ -149,9 +153,9 @@ class SettingsPage extends Page implements HasForms
                 Forms\Components\Section::make('Quote Terms & Conditions')
                     ->description('Pre-filled on all new quotes. Can be edited per-quote.')
                     ->schema([
-                        Forms\Components\Textarea::make('quote_terms_conditions')
+                        Forms\Components\RichEditor::make('quote_terms_conditions')
                             ->label('Quote Terms & Conditions')
-                            ->rows(6)
+                            ->toolbarButtons(['bold', 'italic', 'underline', 'bulletList', 'orderedList', 'h2', 'h3', 'link'])
                             ->columnSpanFull(),
                     ]),
 

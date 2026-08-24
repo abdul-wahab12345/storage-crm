@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\EmployeeResource\RelationManagers;
 
+use App\Models\SalaryRecord;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
@@ -21,10 +22,18 @@ class SalaryRecordsRelationManager extends RelationManager
         return $form->schema([
             Forms\Components\Select::make('month')
                 ->options([
-                    1 => 'January', 2 => 'February', 3 => 'March',
-                    4 => 'April', 5 => 'May', 6 => 'June',
-                    7 => 'July', 8 => 'August', 9 => 'September',
-                    10 => 'October', 11 => 'November', 12 => 'December',
+                    1 => 'January',
+                    2 => 'February',
+                    3 => 'March',
+                    4 => 'April',
+                    5 => 'May',
+                    6 => 'June',
+                    7 => 'July',
+                    8 => 'August',
+                    9 => 'September',
+                    10 => 'October',
+                    11 => 'November',
+                    12 => 'December',
                 ])
                 ->required(),
             Forms\Components\TextInput::make('year')
@@ -35,33 +44,36 @@ class SalaryRecordsRelationManager extends RelationManager
             Forms\Components\TextInput::make('base_salary')
                 ->label('Base Salary')
                 ->numeric()
-                ->prefix(fn () => \App\Models\Setting::currency())
-                ->default(fn () => $this->getOwnerRecord()->base_salary)
+                ->prefix(fn() => \App\Models\Setting::currency())
+                ->default(fn() => $this->getOwnerRecord()->base_salary)
                 ->live(debounce: 500)
-                ->afterStateUpdated(fn (Set $set, Get $get, $state) =>
+                ->afterStateUpdated(
+                    fn(Set $set, Get $get, $state) =>
                     $set('total', round((float) $state + (float) ($get('bonuses') ?? 0) - (float) ($get('deductions') ?? 0), 2))
                 )
                 ->required(),
             Forms\Components\TextInput::make('bonuses')
                 ->numeric()
-                ->prefix(fn () => \App\Models\Setting::currency())
+                ->prefix(fn() => \App\Models\Setting::currency())
                 ->default(0)
                 ->live(debounce: 500)
-                ->afterStateUpdated(fn (Set $set, Get $get, $state) =>
+                ->afterStateUpdated(
+                    fn(Set $set, Get $get, $state) =>
                     $set('total', round((float) ($get('base_salary') ?? 0) + (float) $state - (float) ($get('deductions') ?? 0), 2))
                 ),
             Forms\Components\TextInput::make('deductions')
                 ->numeric()
-                ->prefix(fn () => \App\Models\Setting::currency())
+                ->prefix(fn() => \App\Models\Setting::currency())
                 ->default(0)
                 ->live(debounce: 500)
-                ->afterStateUpdated(fn (Set $set, Get $get, $state) =>
+                ->afterStateUpdated(
+                    fn(Set $set, Get $get, $state) =>
                     $set('total', round((float) ($get('base_salary') ?? 0) + (float) ($get('bonuses') ?? 0) - (float) $state, 2))
                 ),
             Forms\Components\TextInput::make('total')
                 ->label('Net Total')
                 ->numeric()
-                ->prefix(fn () => \App\Models\Setting::currency())
+                ->prefix(fn() => \App\Models\Setting::currency())
                 ->readOnly()
                 ->dehydrated()
                 ->default(0),
@@ -85,20 +97,20 @@ class SalaryRecordsRelationManager extends RelationManager
                     ->sortable(['year', 'month'])
                     ->weight('bold'),
                 Tables\Columns\TextColumn::make('base_salary')
-                    ->formatStateUsing(fn ($state) => \App\Models\Setting::money($state)),
+                    ->formatStateUsing(fn($state) => \App\Models\Setting::money($state)),
                 Tables\Columns\TextColumn::make('bonuses')
-                    ->formatStateUsing(fn ($state) => \App\Models\Setting::money($state))
+                    ->formatStateUsing(fn($state) => \App\Models\Setting::money($state))
                     ->color('success'),
                 Tables\Columns\TextColumn::make('deductions')
-                    ->formatStateUsing(fn ($state) => \App\Models\Setting::money($state))
+                    ->formatStateUsing(fn($state) => \App\Models\Setting::money($state))
                     ->color('danger'),
                 Tables\Columns\TextColumn::make('total')
                     ->label('Net Pay')
-                    ->formatStateUsing(fn ($state) => \App\Models\Setting::money($state))
+                    ->formatStateUsing(fn($state) => \App\Models\Setting::money($state))
                     ->weight('bold'),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
-                    ->color(fn (string $state): string => $state === 'paid' ? 'success' : 'warning'),
+                    ->color(fn(string $state): string => $state === 'paid' ? 'success' : 'warning'),
                 Tables\Columns\TextColumn::make('paid_at')
                     ->date()
                     ->placeholder('—'),
@@ -114,8 +126,14 @@ class SalaryRecordsRelationManager extends RelationManager
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->requiresConfirmation()
-                    ->visible(fn ($record) => $record->status === 'pending')
-                    ->action(fn ($record) => $record->update(['status' => 'paid', 'paid_at' => now()])),
+                    ->visible(fn($record) => $record->status === 'pending')
+                    ->action(fn($record) => $record->update(['status' => 'paid', 'paid_at' => now()])),
+                Tables\Actions\Action::make('print_slip')
+                    ->label('Salary Slip')
+                    ->icon('heroicon-o-printer')
+                    ->color('gray')
+                    ->url(fn(SalaryRecord $record) => route('salary-records.pdf', $record))
+                    ->openUrlInNewTab(),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([

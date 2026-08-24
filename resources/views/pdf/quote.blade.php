@@ -3,6 +3,7 @@
     $companyAddress = \App\Models\Setting::get('company_address', '');
     $companyPhone = \App\Models\Setting::get('company_phone', '');
     $companyEmail = \App\Models\Setting::get('company_email', '');
+    $trn = \App\Models\Setting::get('trn_number');
     $tc = $quote->terms_conditions ?: \App\Models\Setting::get('quote_terms_conditions');
 
     $logoPath = public_path('images/final-logo.png');
@@ -37,7 +38,7 @@
 
         /* ── Header ── */
         .header-wrap {
-            background: #EA580C;
+            background: #fa7e11;
             padding: 24px 40px;
             margin-bottom: 28px;
         }
@@ -205,7 +206,7 @@
             padding-top: 10px;
             font-size: 17px;
             font-weight: 700;
-            color: #EA580C;
+            color: #fa7e11;
         }
 
         .clearfix {
@@ -259,6 +260,13 @@
             color: #64748b;
             line-height: 1.7;
         }
+        .tc-body p { margin: 0 0 6px 0; }
+        .tc-body ul, .tc-body ol { margin: 4px 0 8px 18px; padding: 0; }
+        .tc-body li { margin-bottom: 3px; }
+        .tc-body strong { font-weight: 700; color: #334155; }
+        .tc-body em { font-style: italic; }
+        .tc-body h2 { font-size: 13px; font-weight: 700; color: #1e293b; margin: 10px 0 4px; }
+        .tc-body h3 { font-size: 12px; font-weight: 700; color: #1e293b; margin: 8px 0 3px; }
     </style>
 </head>
 
@@ -276,6 +284,7 @@
                             <div style="font-size:26px; font-weight:700; color:#fff;">{{ $company }}</div>
                         @endif
                         <div class="brand-sub">
+                            @if ($trn) TRN: {{ $trn }}<br> @endif
                             @if ($companyAddress){{ $companyAddress }}<br>@endif
                             @if ($companyPhone){{ $companyPhone }}@if($companyEmail) &nbsp;|&nbsp;
                             {{ $companyEmail }}@endif@endif
@@ -371,10 +380,17 @@
                 </div>
             @endif
 
+            @if ($quote->scope_of_work)
+                <div class="tc-box" style="margin-top:20px;">
+                    <div class="tc-title">Scope of Work</div>
+                    <div class="tc-body">{!! $quote->scope_of_work !!}</div>
+                </div>
+            @endif
+
             @if ($tc)
                 <div class="tc-box">
                     <div class="tc-title">Terms &amp; Conditions</div>
-                    <div class="tc-body">{{ $tc }}</div>
+                    <div class="tc-body">{!! $tc !!}</div>
                 </div>
             @endif
 

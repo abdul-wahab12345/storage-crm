@@ -32,7 +32,8 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->registration()
             ->brandName('StorageCRM')
-            ->brandLogo(asset('images/final-logo.png'))
+            ->brandLogo(asset('images/Delight-Box-Logo.png.webp'))
+            ->darkModeBrandLogo(asset('images/final-logo.png'))
             ->brandLogoHeight('3rem')
             ->defaultThemeMode(ThemeMode::Dark)
             ->colors([
@@ -70,6 +71,7 @@ class AdminPanelProvider extends PanelProvider
                 'Tenants',
                 'Billing',
                 'Settings',
-            ]);
+            ])
+            ->databaseNotifications();
     }
 }

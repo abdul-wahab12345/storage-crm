@@ -48,14 +48,34 @@ class LeaseResource extends Resource
                         )
                         ->preload()
                         ->createOptionForm([
-                            Forms\Components\TextInput::make('first_name')->required(),
-                            Forms\Components\TextInput::make('last_name')->required(),
-                            Forms\Components\TextInput::make('email')->email(),
-                            Forms\Components\TextInput::make('phone')->tel(),
-                            Forms\Components\TextInput::make('whatsapp_number')
-                                ->label('WhatsApp Number')
-                                ->tel()
-                                ->helperText('Include country code, e.g. +1234567890'),
+                            Forms\Components\Section::make('Personal Details')
+                                ->schema([
+                                    Forms\Components\TextInput::make('first_name')->required(),
+                                    Forms\Components\TextInput::make('last_name')->required(),
+                                    Forms\Components\TextInput::make('emirates_id')
+                                        ->label('Emirates ID')
+                                        ->mask('999-9999-9999999-9'),
+                                    Forms\Components\TextInput::make('company_name')->label('Company Name'),
+                                ])->columns(2),
+                            Forms\Components\Section::make('Contact Info')
+                                ->schema([
+                                    Forms\Components\TextInput::make('email')->email(),
+                                    Forms\Components\TextInput::make('phone')->tel(),
+                                    Forms\Components\TextInput::make('whatsapp_number')
+                                        ->label('WhatsApp Number')
+                                        ->tel()
+                                        ->helperText('Include country code, e.g. +1234567890'),
+                                ])->columns(2),
+                            Forms\Components\Section::make('Alternative Contact')
+                                ->schema([
+                                    Forms\Components\TextInput::make('alt_name')->label('Alternative Name'),
+                                    Forms\Components\TextInput::make('alt_phone')->label('Alternative Phone')->tel(),
+                                ])->columns(2),
+                            Forms\Components\Section::make('Emergency Contact')
+                                ->schema([
+                                    Forms\Components\TextInput::make('emergency_contact_name')->label('Emergency Contact Name'),
+                                    Forms\Components\TextInput::make('emergency_contact_phone')->label('Emergency Contact Phone')->tel(),
+                                ])->columns(2)->collapsible(),
                         ]),
                     Forms\Components\Select::make('unit_id')
                         ->relationship('unit', 'unit_number', fn ($query) => $query->where('status', 'available'))
@@ -90,6 +110,13 @@ class LeaseResource extends Resource
                         ->minValue(1)
                         ->maxValue(31)
                         ->helperText('Auto-set from move-in date.'),
+                    Forms\Components\TextInput::make('billing_interval_months')
+                        ->label('Billing Interval (Months)')
+                        ->required()
+                        ->numeric()
+                        ->default(1)
+                        ->minValue(1)
+                        ->helperText('e.g., 1 for monthly, 3 for quarterly, 6 for semi-annually.'),
                     Forms\Components\Select::make('status')
                         ->options([
                             'active' => 'Active',
@@ -97,7 +124,8 @@ class LeaseResource extends Resource
                             'expired' => 'Expired',
                         ])
                         ->default('active')
-                        ->required(),
+                        ->required()
+                        ->columnSpanFull(),
                 ])
                 ->columns(2),
 
@@ -179,6 +207,9 @@ class LeaseResource extends Resource
                 Tables\Columns\TextColumn::make('billing_day')
                     ->label('Bill Day')
                     ->formatStateUsing(fn ($state) => ordinal($state)),
+                Tables\Columns\TextColumn::make('billing_interval_months')
+                    ->label('Interval')
+                    ->formatStateUsing(fn ($state) => $state == 1 ? 'Monthly' : "Every {$state} Mos"),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -205,7 +236,40 @@ class LeaseResource extends Resource
                     ]),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('send_email')
+                    ->label('Send Email')
+                    ->icon('heroicon-o-paper-airplane')
+                    ->color('info')
+                    ->action(function (\App\Models\Lease $record) {
+                        if ($record->tenant->email) {
+                            $pdfPath = app(\App\Services\LeaseAgreementPdfService::class)->generateAndStore($record);
+                            
+                            $content = "A new lease agreement has been generated.\n\n" .
+                                       "Lease ID: {$record->id}\n" .
+                                       "Move In Date: {$record->move_in_date->format('F j, Y')}";
+
+                            \Illuminate\Support\Facades\Mail::to($record->tenant->email)->send(
+                                new \App\Mail\DocumentMail(
+                                    "Lease Agreement {$record->id} — StorageCRM",
+                                    $content,
+                                    \Illuminate\Support\Facades\Storage::disk('local')->path($pdfPath),
+                                    "lease-agreement-{$record->id}.pdf"
+                                )
+                            );
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Email sent successfully')
+                                ->success()
+                                ->send();
+                        } else {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Tenant has no email address')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
                 Tables\Actions\Action::make('agreement_pdf')
                     ->label('Agreement PDF')
                     ->icon('heroicon-o-document-arrow-down')
@@ -245,6 +309,38 @@ class LeaseResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
+            ])
+            ->headerActions([
+                Tables\Actions\Action::make('export_csv')
+                    ->label('Export CSV')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->action(function () {
+                        $leases = \App\Models\Lease::with(['tenant', 'unit.facility'])->get();
+                        $csv = implode(',', ['ID','Tenant First Name','Tenant Last Name','Tenant Email','Tenant Phone','Unit Number','Facility','Move In Date','Move Out Date','Monthly Rate','Billing Interval (Months)','Status','Deposit','Created At']) . "\n";
+                        foreach ($leases as $l) {
+                            $csv .= implode(',', [
+                                $l->id,
+                                '"' . str_replace('"','""',$l->tenant?->first_name ?? '') . '"',
+                                '"' . str_replace('"','""',$l->tenant?->last_name ?? '') . '"',
+                                '"' . str_replace('"','""',$l->tenant?->email ?? '') . '"',
+                                '"' . str_replace('"','""',$l->tenant?->phone ?? '') . '"',
+                                '"' . str_replace('"','""',$l->unit?->unit_number ?? '') . '"',
+                                '"' . str_replace('"','""',$l->unit?->facility?->name ?? '') . '"',
+                                '"' . ($l->move_in_date?->format('Y-m-d') ?? '') . '"',
+                                '"' . ($l->move_out_date?->format('Y-m-d') ?? '') . '"',
+                                $l->monthly_rate ?? 0,
+                                $l->billing_interval_months ?? 1,
+                                '"' . str_replace('"','""',$l->status ?? '') . '"',
+                                $l->deposit_amount ?? 0,
+                                '"' . ($l->created_at?->format('Y-m-d H:i:s') ?? '') . '"',
+                            ]) . "\n";
+                        }
+                        return response()->streamDownload(
+                            fn () => print($csv),
+                            'leases-' . now()->format('Y-m-d') . '.csv',
+                            ['Content-Type' => 'text/csv']
+                        );
+                    }),
             ])
             ->defaultSort('created_at', 'desc')
             ->emptyStateHeading('No leases yet')

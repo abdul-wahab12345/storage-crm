@@ -14,6 +14,7 @@ class Employee extends Model
         'last_name',
         'email',
         'phone',
+        'emirates_id',
         'position',
         'department',
         'base_salary',
@@ -21,6 +22,7 @@ class Employee extends Model
         'end_date',
         'status',
         'notes',
+        'documents',
     ];
 
     protected function casts(): array
@@ -29,6 +31,7 @@ class Employee extends Model
             'join_date'   => 'date',
             'end_date'    => 'date',
             'base_salary' => 'decimal:2',
+            'documents'   => 'array',
         ];
     }
 

@@ -128,6 +128,39 @@ class PaymentResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('send_email')
+                    ->label('Send Email')
+                    ->icon('heroicon-o-paper-airplane')
+                    ->color('info')
+                    ->action(function (\App\Models\Payment $record) {
+                        if ($record->invoice->tenant->email) {
+                            $pdfPath = app(\App\Services\PaymentReceiptPdfService::class)->generateAndStore($record);
+                            
+                            $receiptNumber = 'RCP-' . str_pad($record->id, 6, '0', STR_PAD_LEFT);
+                            $content = "Thank you for your payment.\n\n" .
+                                       "Receipt #: {$receiptNumber}\n" .
+                                       "Amount Paid: " . \App\Models\Setting::currency() . number_format((float) $record->amount, 2);
+
+                            \Illuminate\Support\Facades\Mail::to($record->invoice->tenant->email)->send(
+                                new \App\Mail\DocumentMail(
+                                    "Payment Receipt {$receiptNumber} — StorageCRM",
+                                    $content,
+                                    \Illuminate\Support\Facades\Storage::disk('local')->path($pdfPath),
+                                    "{$receiptNumber}.pdf"
+                                )
+                            );
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Email sent successfully')
+                                ->success()
+                                ->send();
+                        } else {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Tenant has no email address')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
                 Tables\Actions\Action::make('receipt_pdf')
                     ->label('Receipt PDF')
                     ->icon('heroicon-o-document-arrow-down')
@@ -139,6 +172,34 @@ class PaymentResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
+            ])
+            ->headerActions([
+                Tables\Actions\Action::make('export_csv')
+                    ->label('Export CSV')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->action(function () {
+                        $payments = \App\Models\Payment::with(['invoice.tenant'])->get();
+                        $csv = implode(',', ['ID','Invoice Number','Tenant First Name','Tenant Last Name','Amount Paid','Method','Reference','Paid At','Notes','Created At']) . "\n";
+                        foreach ($payments as $p) {
+                            $csv .= implode(',', [
+                                $p->id,
+                                '"' . str_replace('"','""',$p->invoice?->invoice_number ?? '') . '"',
+                                '"' . str_replace('"','""',$p->invoice?->tenant?->first_name ?? '') . '"',
+                                '"' . str_replace('"','""',$p->invoice?->tenant?->last_name ?? '') . '"',
+                                $p->amount ?? 0,
+                                '"' . str_replace('"','""',$p->method ?? '') . '"',
+                                '"' . str_replace('"','""',$p->reference ?? '') . '"',
+                                '"' . ($p->paid_at?->format('Y-m-d H:i:s') ?? '') . '"',
+                                '"' . str_replace('"','""',$p->notes ?? '') . '"',
+                                '"' . ($p->created_at?->format('Y-m-d H:i:s') ?? '') . '"',
+                            ]) . "\n";
+                        }
+                        return response()->streamDownload(
+                            fn () => print($csv),
+                            'payments-' . now()->format('Y-m-d') . '.csv',
+                            ['Content-Type' => 'text/csv']
+                        );
+                    }),
             ])
             ->defaultSort('paid_at', 'desc')
             ->emptyStateHeading('No payments yet')

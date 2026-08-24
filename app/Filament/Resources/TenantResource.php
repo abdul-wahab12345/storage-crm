@@ -46,11 +46,24 @@ class TenantResource extends Resource
         return $form->schema([
             Forms\Components\Section::make('Personal Information')
                 ->schema([
+                    Forms\Components\TextInput::make('emirates_id')
+                        ->label('Emirates ID')
+                        ->mask('999-9999-9999999-9')
+                        ->maxLength(100),
+                    Forms\Components\TextInput::make('passport_number')
+                        ->label('Passport Number')
+                        ->maxLength(100),
                     Forms\Components\TextInput::make('first_name')
                         ->required()
                         ->maxLength(100),
                     Forms\Components\TextInput::make('last_name')
                         ->required()
+                        ->maxLength(100),
+                    Forms\Components\TextInput::make('company_name')
+                        ->label('Company Name')
+                        ->maxLength(255),
+                    Forms\Components\TextInput::make('trade_license_number')
+                        ->label('Trade License Number')
                         ->maxLength(100),
                     Forms\Components\TextInput::make('email')
                         ->email()
@@ -63,8 +76,24 @@ class TenantResource extends Resource
                         ->tel()
                         ->maxLength(20)
                         ->helperText('Include country code, e.g. +1234567890'),
+                    Forms\Components\Fieldset::make('Alternative Contact')
+                        ->schema([
+                            Forms\Components\TextInput::make('alt_name')
+                                ->label('Alternative Name')
+                                ->maxLength(200),
+                            Forms\Components\TextInput::make('alt_phone')
+                                ->label('Alternative Phone')
+                                ->tel()
+                                ->maxLength(20),
+                        ])
+                        ->columns(2),
                     Forms\Components\Textarea::make('address')
                         ->rows(2)
+                        ->columnSpanFull(),
+                    Forms\Components\FileUpload::make('logo')
+                        ->label('Company Logo / Photo')
+                        ->image()
+                        ->directory('tenant-logos')
                         ->columnSpanFull(),
                 ])
                 ->columns(2),
@@ -171,6 +200,39 @@ class TenantResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+            ])
+            ->headerActions([
+                Tables\Actions\Action::make('export_csv')
+                    ->label('Export CSV')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->action(function () {
+                        $tenants = \App\Models\Tenant::all();
+                        $csv = implode(',', ['ID','First Name','Last Name','Email','Phone','Alt Phone','Alt Contact','Emirates ID','Passport','Company','Trade License','Address','WhatsApp','Status','Created At']) . "\n";
+                        foreach ($tenants as $t) {
+                            $csv .= implode(',', [
+                                $t->id,
+                                '"' . str_replace('"','""',$t->first_name ?? '') . '"',
+                                '"' . str_replace('"','""',$t->last_name ?? '') . '"',
+                                '"' . str_replace('"','""',$t->email ?? '') . '"',
+                                '"' . str_replace('"','""',$t->phone ?? '') . '"',
+                                '"' . str_replace('"','""',$t->alt_phone ?? '') . '"',
+                                '"' . str_replace('"','""',$t->alt_name ?? '') . '"',
+                                '"' . str_replace('"','""',$t->emirates_id ?? '') . '"',
+                                '"' . str_replace('"','""',$t->passport_number ?? '') . '"',
+                                '"' . str_replace('"','""',$t->company_name ?? '') . '"',
+                                '"' . str_replace('"','""',$t->trade_license_number ?? '') . '"',
+                                '"' . str_replace('"','""',$t->address ?? '') . '"',
+                                '"' . str_replace('"','""',$t->whatsapp_number ?? '') . '"',
+                                '"' . str_replace('"','""',$t->status ?? '') . '"',
+                                '"' . ($t->created_at?->format('Y-m-d H:i:s') ?? '') . '"',
+                            ]) . "\n";
+                        }
+                        return response()->streamDownload(
+                            fn () => print($csv),
+                            'tenants-' . now()->format('Y-m-d') . '.csv',
+                            ['Content-Type' => 'text/csv']
+                        );
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

@@ -22,6 +22,13 @@ class Tenant extends Model
         'emergency_contact_name',
         'emergency_contact_phone',
         'notes',
+        'alt_name',
+        'emirates_id',
+        'company_name',
+        'trade_license_number',
+        'passport_number',
+        'alt_phone',
+        'logo',
     ];
 
     public function leases(): HasMany

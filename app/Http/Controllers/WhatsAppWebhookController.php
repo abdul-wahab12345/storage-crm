@@ -31,6 +31,7 @@ class WhatsAppWebhookController extends Controller
     public function handle(Request $request)
     {
         $payload = $request->all();
+        Log::info('WhatsApp Webhook received payload: ' . json_encode($payload));
 
         if (($payload['object'] ?? '') === 'whatsapp_business_account') {
             foreach ($payload['entry'] as $entry) {
@@ -60,7 +61,7 @@ class WhatsAppWebhookController extends Controller
             $msgId = $msg['id'];
             $timestamp = isset($msg['timestamp']) ? \Carbon\Carbon::createFromTimestamp($msg['timestamp']) : now();
             $type = $msg['type'];
-            
+
             $body = null;
             if ($type === 'text') {
                 $body = $msg['text']['body'] ?? null;

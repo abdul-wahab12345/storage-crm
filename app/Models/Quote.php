@@ -22,6 +22,7 @@ class Quote extends Model
         'total',
         'notes',
         'terms_conditions',
+        'scope_of_work',
         'valid_until',
     ];
 

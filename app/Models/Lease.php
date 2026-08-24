@@ -17,6 +17,7 @@ class Lease extends Model
         'move_out_date',
         'monthly_rate',
         'billing_day',
+        'billing_interval_months',
         'status',
         'notes',
         'space_details',

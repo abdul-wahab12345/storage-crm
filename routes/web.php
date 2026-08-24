@@ -14,6 +14,10 @@ Route::get('/', function () {
     return redirect('/admin');
 });
 
+Route::get('/privacy', function () {
+    return view('privacy');
+})->name('privacy');
+
 Route::get('/webhook/whatsapp', [\App\Http\Controllers\WhatsAppWebhookController::class, 'verify']);
 Route::post('/webhook/whatsapp', [\App\Http\Controllers\WhatsAppWebhookController::class, 'handle'])->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 
@@ -50,4 +54,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/payments/{payment}/receipt/pdf', function (Payment $payment) {
         return app(PaymentReceiptPdfService::class)->download($payment);
     })->name('payments.receipt.pdf');
+
+    Route::get('/sales-invoices/{sales_invoice}/pdf', function (\App\Models\SalesInvoice $salesInvoice) {
+        return app(\App\Services\SalesInvoicePdfService::class)->download($salesInvoice);
+    })->name('sales-invoices.pdf');
+
+    Route::get('/salary-records/{salaryRecord}/pdf', function (\App\Models\SalaryRecord $salaryRecord) {
+        return app(\App\Services\SalarySlipPdfService::class)->download($salaryRecord);
+    })->name('salary-records.pdf');
 });

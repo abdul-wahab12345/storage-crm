@@ -3,6 +3,7 @@
     $companyAddress = \App\Models\Setting::get('company_address', '');
     $companyPhone = \App\Models\Setting::get('company_phone', '');
     $companyEmail = \App\Models\Setting::get('company_email', '');
+    $trn = \App\Models\Setting::get('trn_number');
 
     $logoPath = public_path('images/final-logo.png');
     $logoData = file_exists($logoPath)
@@ -45,7 +46,7 @@
 
         /* ── Header ── */
         .header-wrap {
-            background: #EA580C;
+            background: #fa7e11;
             padding: 16px 30px;
         }
 
@@ -98,7 +99,7 @@
         .agr-no {
             font-size: 11px;
             font-weight: 700;
-            color: #EA580C;
+            color: #fa7e11;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
@@ -114,7 +115,7 @@
             font-size: 12px;
             font-weight: 700;
             color: #fff;
-            background: #EA580C;
+            background: #fa7e11;
             text-transform: uppercase;
             letter-spacing: 1px;
             padding: 6px 10px 4px;
@@ -293,6 +294,7 @@
                         <div style="font-size:22px; font-weight:700; color:#fff;">{{ $company }}</div>
                     @endif
                     <div class="brand-sub">
+                        @if ($trn) TRN: {{ $trn }}<br> @endif
                         @if ($companyAddress){{ $companyAddress }}<br>@endif
                         @if ($companyPhone){{ $companyPhone }}@if($companyEmail) &nbsp;·&nbsp;
                         {{ $companyEmail }}@endif@endif
@@ -340,6 +342,24 @@
                             <td class="label">Address</td>
                             <td class="value">{{ $lease->tenant->address ?? '—' }}</td>
                         </tr>
+                        @if ($lease->tenant->emirates_id)
+                        <tr>
+                            <td class="label">Emirates ID</td>
+                            <td class="value">{{ $lease->tenant->emirates_id }}</td>
+                        </tr>
+                        @endif
+                        @if ($lease->tenant->company_name)
+                        <tr>
+                            <td class="label">Company Name</td>
+                            <td class="value">{{ $lease->tenant->company_name }}</td>
+                        </tr>
+                        @endif
+                        @if ($lease->tenant->trade_license_number)
+                        <tr>
+                            <td class="label">Trade License</td>
+                            <td class="value">{{ $lease->tenant->trade_license_number }}</td>
+                        </tr>
+                        @endif
                         @if($lease->storage_type)
                             <tr>
                                 <td class="label">Storage Type</td>
@@ -399,7 +419,7 @@
                         </tr>
                         <tr>
                             <td class="label">Monthly Rate</td>
-                            <td class="value" style="font-weight:700; color:#EA580C;">
+                            <td class="value" style="font-weight:700; color:#fa7e11;">
                                 {{ \App\Models\Setting::money($lease->monthly_rate) }}</td>
                         </tr>
                         <tr>
@@ -486,8 +506,13 @@
         <table class="sig-table" cellpadding="0" cellspacing="0">
             <tr>
                 <td>
-                    <div class="sig-label">Customer Signature</div>
-                    <div class="sig-name">{{ $lease->tenant->full_name }}</div>
+                    <div class="party-name">{{ $lease->tenant->full_name }}</div>
+                    @if ($lease->tenant->email)<div class="party-detail">{{ $lease->tenant->email }}</div>@endif
+                    @if ($lease->tenant->phone)<div class="party-detail">{{ $lease->tenant->phone }}</div>@endif
+                    @if ($lease->tenant->emirates_id)<div class="party-detail">Emirates ID: {{ $lease->tenant->emirates_id }}</div>@endif
+                    @if ($lease->tenant->company_name)<div class="party-detail">Company: {{ $lease->tenant->company_name }}</div>@endif
+                    @if ($lease->tenant->trade_license_number)<div class="party-detail">Trade License: {{ $lease->tenant->trade_license_number }}</div>@endif
+                    <div class="sig-label" style="margin-top:10px;">Customer Signature</div>
                     <div class="sig-line">Signature
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         Date: _______________</div>

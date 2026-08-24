@@ -3,6 +3,7 @@
     $companyAddress = \App\Models\Setting::get('company_address', '');
     $companyPhone = \App\Models\Setting::get('company_phone', '');
     $companyEmail = \App\Models\Setting::get('company_email', '');
+    $trn = \App\Models\Setting::get('trn_number');
 
     $logoPath = public_path('images/final-logo.png');
     $logoData = file_exists($logoPath)
@@ -44,7 +45,7 @@
 
         /* ── Header ── */
         .header-wrap {
-            background: #EA580C;
+            background: #fa7e11;
             padding: 24px 40px;
             margin-bottom: 28px;
         }
@@ -87,7 +88,7 @@
             font-size: 12px;
             font-weight: 700;
             color: #fff;
-            background: #EA580C;
+            background: #fa7e11;
             text-transform: uppercase;
             letter-spacing: 1px;
             padding: 6px 10px 4px;
@@ -222,6 +223,7 @@
                         <div style="font-size:24px; font-weight:700; color:#fff;">{{ $company }}</div>
                     @endif
                     <div class="brand-sub">
+                        @if ($trn) TRN: {{ $trn }}<br> @endif
                         @if ($companyAddress){{ $companyAddress }}<br>@endif
                         @if ($companyPhone){{ $companyPhone }}@if($companyEmail) &nbsp;·&nbsp;
                         {{ $companyEmail }}@endif@endif
@@ -267,7 +269,7 @@
                         </tr>
                         <tr>
                             <td class="label">Move Out Date</td>
-                            <td class="value" style="font-weight:700; color:#EA580C;">
+                            <td class="value" style="font-weight:700; color:#fa7e11;">
                                 {{ $form->move_out_date ? $form->move_out_date->format('d M Y') : '—' }}</td>
                         </tr>
                         <tr>

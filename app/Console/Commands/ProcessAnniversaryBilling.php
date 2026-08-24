@@ -39,8 +39,16 @@ class ProcessAnniversaryBilling extends Command
         $skipped = 0;
 
         foreach ($leases as $lease) {
+            $monthsSinceMoveIn = $today->copy()->startOfDay()->diffInMonths($lease->move_in_date->copy()->startOfDay());
+            $interval = $lease->billing_interval_months ?: 1;
+
+            if ($monthsSinceMoveIn % $interval !== 0) {
+                // Not the correct month for billing based on interval
+                continue;
+            }
+
             $periodStart = $today->copy()->startOfDay();
-            $periodEnd = $today->copy()->addMonth()->subDay()->endOfDay();
+            $periodEnd = $today->copy()->addMonths($interval)->subDay()->endOfDay();
 
             $existingInvoice = Invoice::where('lease_id', $lease->id)
                 ->where('period_start', $periodStart->toDateString())
@@ -53,7 +61,7 @@ class ProcessAnniversaryBilling extends Command
             }
 
             if ($isDryRun) {
-                $this->line("  [DRY RUN] Would bill: {$lease->tenant->full_name} — Unit {$lease->unit->unit_number} — \${$lease->monthly_rate}");
+                $this->line("  [DRY RUN] Would bill: {$lease->tenant->full_name} — Unit {$lease->unit->unit_number} — \${$lease->monthly_rate} (Interval: {$interval} months)");
                 $created++;
                 continue;
             }
@@ -63,7 +71,7 @@ class ProcessAnniversaryBilling extends Command
                     $invoice = Invoice::create([
                         'lease_id' => $lease->id,
                         'tenant_id' => $lease->tenant_id,
-                        'amount' => $lease->monthly_rate,
+                        'amount' => $lease->monthly_rate, // User confirmed no multiplication is needed
                         'late_fee' => 0,
                         'total' => $lease->monthly_rate,
                         'due_date' => $periodStart->toDateString(),

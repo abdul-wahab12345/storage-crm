@@ -7,12 +7,22 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class QuotePdfService
 {
-    public function download(Quote $quote): \Symfony\Component\HttpFoundation\Response
+    public function generate(Quote $quote)
     {
         $quote->load('items');
+        return Pdf::loadView('pdf.quote', compact('quote'))->setPaper('a4');
+    }
 
-        return Pdf::loadView('pdf.quote', compact('quote'))
-            ->setPaper('a4')
-            ->download("quote-{$quote->quote_number}.pdf");
+    public function generateAndStore(Quote $quote): string
+    {
+        $pdf = $this->generate($quote);
+        $path = "quotes/quote-{$quote->quote_number}.pdf";
+        \Illuminate\Support\Facades\Storage::disk('local')->put($path, $pdf->output());
+        return $path;
+    }
+
+    public function download(Quote $quote): \Symfony\Component\HttpFoundation\Response
+    {
+        return $this->generate($quote)->download("quote-{$quote->quote_number}.pdf");
     }
 }

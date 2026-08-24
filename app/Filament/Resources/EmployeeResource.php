@@ -39,6 +39,10 @@ class EmployeeResource extends Resource
                     Forms\Components\TextInput::make('last_name')->required()->maxLength(100),
                     Forms\Components\TextInput::make('email')->email()->unique(ignoreRecord: true),
                     Forms\Components\TextInput::make('phone')->tel()->maxLength(20),
+                    Forms\Components\TextInput::make('emirates_id')
+                        ->label('Emirates ID')
+                        ->mask('999-9999-9999999-9')
+                        ->maxLength(100),
                 ])
                 ->columns(2),
 
@@ -75,6 +79,18 @@ class EmployeeResource extends Resource
             Forms\Components\Section::make('Notes')
                 ->schema([
                     Forms\Components\Textarea::make('notes')->rows(3),
+                ])
+                ->collapsible(),
+
+            Forms\Components\Section::make('Documents')
+                ->schema([
+                    Forms\Components\FileUpload::make('documents')
+                        ->multiple()
+                        ->directory('employee-documents')
+                        ->preserveFilenames()
+                        ->reorderable()
+                        ->appendFiles()
+                        ->downloadable(),
                 ])
                 ->collapsible(),
         ]);
